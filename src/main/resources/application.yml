@@ -1,0 +1,61 @@
+spring:
+  profiles:
+    active: prod
+
+  security:
+    jwt:
+      header: Authorization
+      secret: ${JWT_SECRET}
+      token-validity-in-seconds: 86400
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+        implicit-strategy: org.hibernate.boot.model.naming.ImplicitNamingStrategyLegacyJpaImpl
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: Asia/Seoul
+
+
+  servlet:
+    multipart:
+      maxFileSize: 10MB
+      maxRequestSize: 10MB
+
+mail:
+  smtp:
+    auth: true
+    starttls:
+      required: true
+      enable: true
+    socketFactory:
+      class: javax.net.ssl.SSLSocketFactory
+      fallback: false
+      port: 465
+    port: 465
+
+#    default_batch_fetch_size: 1000
+
+logging.level:
+  org.hibernate.SQL: debug
+  org.hibernate.type: trace
+  # parameter Binding
+
+cloud:
+  aws:
+    credentials:
+      accessKey: ${AWS_ACCESS_KEY}
+      secretKey: ${AWS_SECRET_KEY}
+    s3:
+      bucket: capstone-lookit
+    region:
+      static: ap-northeast-2
+    stack:
+      auto: false
+
+AdminMail:
+  id: ${ADMIN_MAIL_ID}
+  password: ${ADMIN_MAIL_PW}
