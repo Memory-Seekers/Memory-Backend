@@ -20,6 +20,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.ObjectUtils;
 
 @SpringBootTest
@@ -30,9 +31,10 @@ public class UserServiceTest {
 	@Autowired UserRepository userRepository;
 	@Autowired JwtProvider jwtProvider;
 	@Autowired RedisTemplate redisTemplate;
+	@Autowired PasswordEncoder passwordEncoder;
 
 	@Test
-	@DisplayName("회원가입_정상")
+	@DisplayName("회원가입_성공")
 	public void joinSuccess() throws Exception {
 		//Given
 		String tagId ="lookIt-test1";
@@ -70,7 +72,7 @@ public class UserServiceTest {
 	}
 
 	@Test
-	@DisplayName("로그인_정상")
+	@DisplayName("로그인_성공")
 	public void loginSuccess() throws Exception {
 		//Given
 		String email ="whitez1502@gmail.com";
@@ -124,7 +126,7 @@ public class UserServiceTest {
 	}
 
 	@Test
-	@DisplayName("로그아웃_정상")
+	@DisplayName("로그아웃_성공")
 	public void logoutSuccess() throws Exception {
 		//Given
 		String email ="whitez1502@gmail.com";
@@ -144,6 +146,46 @@ public class UserServiceTest {
 		assertFalse(ObjectUtils.isEmpty(isLogout));
 	}
 
+	@Test
+	@DisplayName("중복아이디확인_성공")
+	public void checkIdDuplicateSuccess() throws Exception {
+		//Given
+		String newTagId = "test1";
+		String oldTagId = "whitez1502";
 
+		//When
+		assertTrue(userService.checkIdDuplicate(newTagId));
+		assertFalse(userService.checkIdDuplicate(oldTagId));
+	}
 
+	@Test
+	@DisplayName("비밀번호이메일인증_없는이메일예외")
+	public void emailConfirmFail() throws Exception {
+		//Given
+		String email ="test@gmail.com";
+
+		//When
+		IllegalStateException e = assertThrows(IllegalStateException.class,
+			() -> userService.emailConfirm(email));
+		assertThat(e.getMessage()).isEqualTo("해당 이메일로 가입된 유저가 없습니다.");
+	}
+
+	@Test
+	@DisplayName("비밀번호재생성_성공")
+	public void regeneratePasswordSuccess() throws Exception {
+		//Given
+		String email ="whitez1502@gmail.com";
+		String password ="modifiedPassword";
+
+		HashMap<String, String> user1 = new HashMap<>();
+		user1.put("email", email);
+		user1.put("password", password);
+
+		//When
+		userService.regeneratePassword(user1);
+
+		//Then
+		User findUser = userRepository.findByEmail(email).get();
+		assertTrue(passwordEncoder.matches(password, findUser.getPassword()));
+	}
 }
