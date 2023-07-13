@@ -2,12 +2,14 @@ package lookIT.lookITspring.service;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lookIT.lookITspring.dto.UserJoinRequestDto;
 import lookIT.lookITspring.entity.User;
 import lookIT.lookITspring.repository.UserRepository;
 import lookIT.lookITspring.security.JwtProvider;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -18,6 +20,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
+    private final RedisTemplate redisTemplate;
 
     @Transactional
     public boolean join(UserJoinRequestDto requestDto) throws Exception {
@@ -54,7 +57,10 @@ public class UserService {
     }
 
     public boolean logout(String token) {
-        jwtProvider.setExpiration(token);
+        Long expiration = jwtProvider.getExpiration(token);
+
+        redisTemplate.opsForValue()
+            .set(token, "logout", expiration, TimeUnit.MILLISECONDS);
         return true;
     }
 

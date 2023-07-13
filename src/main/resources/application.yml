@@ -25,6 +25,10 @@ spring:
       maxFileSize: 10MB
       maxRequestSize: 10MB
 
+  redis:
+    host: localhost
+    port: 6379
+
 mail:
   smtp:
     auth: true
