@@ -67,11 +67,8 @@ public class UserService {
     }
 
     public String emailConfirm(String email) throws Exception{
-        try {
-            User user = userRepository.findByEmail(email).get();
-        } catch (Exception e) {
-            return "해당 이메일로 가입된 유저가 없습니다.";
-        }
+            User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("해당 이메일로 가입된 유저가 없습니다."));;
 
         String confirm = emailService.sendSimpleMessage(email);
         return confirm;
