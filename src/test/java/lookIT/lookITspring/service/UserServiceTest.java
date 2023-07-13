@@ -2,7 +2,9 @@ package lookIT.lookITspring.service;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
 import javax.transaction.Transactional;
@@ -14,7 +16,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.ObjectUtils;
 
 @SpringBootTest
 @Transactional
@@ -23,6 +29,7 @@ public class UserServiceTest {
 	@Autowired UserService userService;
 	@Autowired UserRepository userRepository;
 	@Autowired JwtProvider jwtProvider;
+	@Autowired RedisTemplate redisTemplate;
 
 	@Test
 	@DisplayName("회원가입_정상")
@@ -115,5 +122,28 @@ public class UserServiceTest {
 			() -> userService.login(user1));
 		assertThat(e.getMessage()).isEqualTo("비밀번호가 일치하지 않습니다.");
 	}
+
+	@Test
+	@DisplayName("로그아웃_정상")
+	public void logoutSuccess() throws Exception {
+		//Given
+		String email ="whitez1502@gmail.com";
+		String password ="memoryRecord123!";
+
+		HashMap<String, String> user1 = new HashMap<>();
+		user1.put("email", email);
+		user1.put("password", password);
+
+		String token1 = userService.login(user1);
+
+		//When
+		userService.logout(token1);
+
+		//Then
+		String isLogout = (String)redisTemplate.opsForValue().get(token1);
+		assertFalse(ObjectUtils.isEmpty(isLogout));
+	}
+
+
 
 }
