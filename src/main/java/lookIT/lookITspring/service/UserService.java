@@ -12,6 +12,7 @@ import lookIT.lookITspring.security.JwtProvider;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @RequiredArgsConstructor
 @Transactional
@@ -21,6 +22,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
     private final RedisTemplate redisTemplate;
+    private final EmailService emailService;
 
     @Transactional
     public boolean join(UserJoinRequestDto requestDto) throws Exception {
@@ -62,6 +64,22 @@ public class UserService {
         redisTemplate.opsForValue()
             .set(token, "logout", expiration, TimeUnit.MILLISECONDS);
         return true;
+    }
+
+    public String emailConfirm(String email) throws Exception{
+        try {
+            User user = userRepository.findByEmail(email).get();
+        } catch (Exception e) {
+            return "해당 이메일로 가입된 유저가 없습니다.";
+        }
+
+        String confirm = emailService.sendSimpleMessage(email);
+        return confirm;
+    }
+
+    public String emailConfirmJoin(String email) throws Exception {
+        String confirm = emailService.sendSimpleMessage2(email);
+        return confirm;
     }
 
     public boolean regeneratePassword(Map<String, String> request) {

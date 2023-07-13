@@ -13,6 +13,7 @@ import lookIT.lookITspring.repository.UserRepository;
 import lookIT.lookITspring.repository.MemorySpotRepository;
 import lookIT.lookITspring.security.CustomUserDetailsService;
 import lookIT.lookITspring.security.JwtProvider;
+import lookIT.lookITspring.service.EmailService;
 import lookIT.lookITspring.service.FriendService;
 import lookIT.lookITspring.service.LandmarkService;
 import lookIT.lookITspring.service.MemoryService;
@@ -100,7 +101,7 @@ public class SpringConfig {
 
     @Bean
     public UserService userService() {
-        return new UserService(userRepository, passwordEncoder(), jwtProvider(), redisTemplate());
+        return new UserService(userRepository, passwordEncoder(), jwtProvider(), redisTemplate(), new EmailService());
     }
 
     @Bean
