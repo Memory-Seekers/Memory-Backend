@@ -87,6 +87,5 @@ public class MemorySpotServiceTest {
         assertEquals(127.002398, result.get(1).get("spotLongitude"));
         assertEquals(37.565513, result.get(1).get("spotLatitude"));
     }
-
- */
+     */
 }

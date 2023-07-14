@@ -1,11 +1,14 @@
 package lookIT.lookITspring.controller;
 
 import lookIT.lookITspring.service.MemorySpotService;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -22,6 +25,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+/*
 @ExtendWith(MockitoExtension.class)
 class MemorySpotControllerTest {
     @Mock //Mock 객체 생성
@@ -31,6 +36,7 @@ class MemorySpotControllerTest {
     private MemorySpotController memorySpotController;
 
     @Test
+    @DisplayName("추억일지 스팟 및 사진 반환 ")
     public void testMemoryPhotoEndpoint() throws Exception{
         Long memoryId_1 = 1L;
         Long memoryId_2 = 26L;
@@ -55,10 +61,10 @@ class MemorySpotControllerTest {
         //MemorySpotController에 대한 MockMvc 객체를 생성
         MockMvc mockMvc = MockMvcBuilders.standaloneSetup(memorySpotController).build();
 
-        /*memories/photo URL에 memoryId 파라미터를 포함한 GET 요청을 수행
-        -> MemorySpotController의 MemoryPhoto() 메서드를 호출
-        -> 결과는 MvcResult로 반환됨
-         */
+        // memories/photo URL에 memoryId 파라미터를 포함한 GET 요청을 수행
+        // MemorySpotController의 MemoryPhoto() 메서드를 호출
+        // 결과는 MvcResult로 반환됨
+
         MvcResult mvcResult1 = mockMvc.perform(get("/memories/photo")
                         .param("memoryId", String.valueOf(memoryId_1)))
                 .andExpect(status().isOk()) // 응답 상태 200인지 확인
@@ -76,6 +82,56 @@ class MemorySpotControllerTest {
         assertThat(mvcResult2.getResponse().getContentAsString()).isNotEmpty().isEqualTo(
                 "[{\"spotLatitude\":123.12111,\"spotLongitude\":121.1221991,\"memoryPhotos\":[],\"spotIDs\":[1,2]}]");
         // 예상한대로 비즈니스 로직이 불렸는지 확인 - 메서드가 주어진 memoryId로 호출되었는지?
+        verify(memorySpotService).showAllMemorySpotPhotos(memoryId_1);
+        verify(memorySpotService).showAllMemorySpotPhotos(memoryId_2);
+    }
+}
+*/
+
+@SpringBootTest
+@AutoConfigureMockMvc //테스트에서 MockMvc 객체를 자동으로 구성하여 HTTP 요청을 모사하고 컨트롤러의 동작을 테스트할 수 있음
+class MemorySpotControllerTest {
+    @Autowired
+    private  MockMvc mockMvc; //HTTP 요청을 모사하고 컨트롤러와 상호작용하기 위한 객체
+    @MockBean //목 객체를 생성하고 Spring 컨텍스트에 빈으로 등록
+    private MemorySpotService memorySpotService;
+    @Test
+    @DisplayName("추억일지 스팟 및 사진 반환")
+    public void MemoryPhotoTest() throws Exception{
+        Long memoryId_1 = 1L;
+        Long memoryId_2 = 26L;
+        List<Map<String, Object>> expectedRes1 = new ArrayList<>();
+        List<Map<String, Object>> expectedRes2 = new ArrayList<>();
+
+        // 예상 결과값 1 설정
+        when(memorySpotService.showAllMemorySpotPhotos(memoryId_1)).thenReturn(expectedRes1);
+        // 예상 결과값 2 설정
+        Map<String, Object> spotData = new HashMap<>();
+        spotData.put("spotLatitude", 123.12111);
+        spotData.put("spotLongitude", 121.1221991);
+        spotData.put("memoryPhotos", new ArrayList<>());
+        List<Long> spotIDs = new ArrayList<>();
+        spotIDs.add(1L);
+        spotIDs.add(2L);
+        spotData.put("spotIDs", spotIDs);
+        expectedRes2.add(spotData);
+        when(memorySpotService.showAllMemorySpotPhotos(memoryId_2)).thenReturn(expectedRes2);
+
+        MvcResult mvcResult1 = mockMvc.perform(get("/memories/photo")
+                        .param("memoryId", String.valueOf(memoryId_1)))
+                .andExpect(status().isOk())
+                .andReturn();
+        MvcResult mvcResult2 = mockMvc.perform(get("/memories/photo")
+                        .param("memoryId", String.valueOf(memoryId_2)))
+                .andExpect(status().isOk())
+                .andReturn();
+
+        assertThat(mvcResult1.getRequest().getRequestURI()).isEqualTo("/memories/photo");
+        assertThat(mvcResult2.getRequest().getRequestURI()).isEqualTo("/memories/photo");
+        assertThat(mvcResult1.getResponse().getContentAsString()).isNotEmpty().isEqualTo("[]");
+        assertThat(mvcResult2.getResponse().getContentAsString()).isNotEmpty().isEqualTo(
+                "[{\"spotLatitude\":123.12111,\"spotLongitude\":121.1221991,\"memoryPhotos\":[],\"spotIDs\":[1,2]}]");
+
         verify(memorySpotService).showAllMemorySpotPhotos(memoryId_1);
         verify(memorySpotService).showAllMemorySpotPhotos(memoryId_2);
     }
