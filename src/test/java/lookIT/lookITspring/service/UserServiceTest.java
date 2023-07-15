@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
+import javax.mail.internet.AddressException;
 import javax.transaction.Transactional;
 import lookIT.lookITspring.dto.UserJoinRequestDto;
 import lookIT.lookITspring.entity.User;
@@ -18,8 +19,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.ObjectUtils;
 
@@ -168,6 +167,17 @@ public class UserServiceTest {
 		IllegalStateException e = assertThrows(IllegalStateException.class,
 			() -> userService.emailConfirm(email));
 		assertThat(e.getMessage()).isEqualTo("해당 이메일로 가입된 유저가 없습니다.");
+	}
+
+	@Test
+	@DisplayName("회원가입이메일인증_유효하지않은이메일예외")
+	public void emailConfirmJoinFail() throws Exception {
+		//Given
+		String email ="@gmail.com";
+
+		//When
+		AddressException e = assertThrows(AddressException.class,
+			() -> userService.emailConfirmJoin(email));
 	}
 
 	@Test
