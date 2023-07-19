@@ -1,15 +1,19 @@
 package lookIT.lookITspring.service;
 
 import lookIT.lookITspring.entity.Memory;
+import lookIT.lookITspring.entity.MemoryPhoto;
 import lookIT.lookITspring.entity.MemorySpot;
+import lookIT.lookITspring.repository.MemoryPhotoRepository;
 import lookIT.lookITspring.repository.MemoryRepository;
 import lookIT.lookITspring.repository.MemorySpotRepository;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.junit.jupiter.api.DisplayName;
 
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -24,20 +28,21 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 import static org.testng.AssertJUnit.assertEquals;
+import static org.testng.AssertJUnit.assertNotNull;
 
+//@JdbcTest
 @SpringBootTest
-@AutoConfigureMockMvc
 @Transactional
 public class MemorySpotServiceTest {
 
-    @Mock
-    private MemorySpotRepository memorySpotRepository;
+    @Autowired
+    MemorySpotRepository memorySpotRepository;
 
-    @Mock
-    private MemoryRepository memoryRepository;
+    @Autowired
+    MemorySpotService memorySpotService;
 
-    @InjectMocks
-    private MemorySpotService memorySpotService;
+    @Autowired
+    MemoryPhotoRepository memoryPhotoRepository;
 /*
 
     @Test
@@ -60,32 +65,70 @@ public class MemorySpotServiceTest {
 
         assertTrue(result);
     }
+    */
 
-    @Test
-    public void testShowAllMemorySpotPhotos() throws Exception {
-        MockitoAnnotations.openMocks(this);
+    @BeforeEach
+    public void setUp(){
+        Long memoryID1 = 1L;
+        Long memoryID2 = 2L;
+        Memory memory1 = Memory.builder().memoryId(memoryID1).build();
+        Memory memory2 = Memory.builder().memoryId(memoryID2).build();
 
-        Long memoryID = 1L;
+        Double spot1 = 12.3456;
+        Double spot2 = 12.34567;
+        List<Double> spotList = new ArrayList<>();
+        spotList.add(spot1);
+        spotList.add(spot2);
+
         List<MemorySpot> memorySpots = new ArrayList<>();
-        Memory memory = Memory.builder().memoryId(memoryID).build();
-        MemorySpotId id1 = MemorySpotId.builder().memory(memory).spotLatitude(37.564213).spotLongitude(127.001698).build();
-        MemorySpot memorySpot1 = new MemorySpot(id1, "http://example.com/image1.jpg");
-        MemorySpotId id2 = MemorySpotId.builder().memory(memory).spotLatitude(37.565513).spotLongitude(127.002398).build();
-        MemorySpot memorySpot2 = new MemorySpot(id2, "http://example.com/image2.jpg");
-        memorySpots.add(memorySpot1);
-        memorySpots.add(memorySpot2);
-        when(memoryRepository.findById(memoryID)).thenReturn(Optional.of(memory));
-        when(memorySpotRepository.findAllById_Memory(memory)).thenReturn(memorySpots);
+        int counter = 2;
 
-        List<Map<String, Object>> result = memorySpotService.showAllMemorySpotPhotos(memoryID);
+        for (Double latitudeLongitude : spotList){
+            MemorySpot memoryspot = MemorySpot.builder()
+                    .spotLatitude(latitudeLongitude)
+                    .spotLongitude(latitudeLongitude)
+                    .memory(memory1)
+                    .build();
+            memorySpots.add(memoryspot);
 
-        assertEquals(2, result.size());
-        assertEquals("http://example.com/image1.jpg", result.get(0).get("memoryPhoto"));
-        assertEquals(127.001698, result.get(0).get("spotLongitude"));
-        assertEquals(37.564213, result.get(0).get("spotLatitude"));
-        assertEquals("http://example.com/image2.jpg", result.get(1).get("memoryPhoto"));
-        assertEquals(127.002398, result.get(1).get("spotLongitude"));
-        assertEquals(37.565513, result.get(1).get("spotLatitude"));
+            String imageUrl = "https://look-it.renewal/memoryphoto/%ED%99%example";
+            String key = "https://look-it.renewal/memoryphoto/%ED%99%key";
+
+            for (int i=0; i<counter; i++){
+                MemoryPhoto memoryPhoto = MemoryPhoto.builder()
+                        .memorySpot(memoryspot)
+                        .memoryPhoto(imageUrl)
+                        .memoryPhotoKey(key)
+                        .build();
+                memoryPhotoRepository.save(memoryPhoto);
+            }
+            counter--;
+        }
+        memorySpotRepository.saveAll(memorySpots);
     }
-     */
+    @Test
+    @DisplayName("특정 추억일지 정보 불러오기 - 핀 있을 때")
+    public void testShowAllMemorySpotPhotos() throws Exception {
+        Long memoryID = 1L;
+
+        //when
+        List<Map<String, Object>> res = memorySpotService.showAllMemorySpotPhotos(memoryID);
+
+        //then
+        assertNotNull(res);
+        assertEquals(2,res.size());
+
+        assertEquals(12.3456, res.get(0).get("spotLatitude"));
+        assertEquals(12.3456, res.get(0).get("spotLongitude"));
+        List<String> spot1MemoryPhotos = (List<String>) res.get(0).get("memoryPhotos");
+        assertEquals(2, spot1MemoryPhotos.size());
+        assertEquals("https://look-it.renewal/memoryphoto/%ED%99%example", spot1MemoryPhotos.get(0));
+        assertEquals("https://look-it.renewal/memoryphoto/%ED%99%example", spot1MemoryPhotos.get(1));
+
+        assertEquals(123.12111, res.get(1).get("spotLatitude"));
+        assertEquals(121.1221991, res.get(1).get("spotLongitude"));
+        List<String> spot2MemoryPhotos = (List<String>) res.get(1).get("memoryPhotos");
+        assertEquals(1, spot2MemoryPhotos.size());
+        assertEquals("https://look-it.renewal/memoryphoto/%ED%99%example", spot2MemoryPhotos.get(0));
+    }
 }
