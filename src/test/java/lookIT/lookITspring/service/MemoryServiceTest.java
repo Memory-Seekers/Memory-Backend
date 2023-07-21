@@ -1,5 +1,7 @@
 package lookIT.lookITspring.service;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -93,12 +95,39 @@ public class MemoryServiceTest {
 		assertEquals("surfing", infoTagList.get(1).getInfoTagsId().getInfo());
 	}
 
-//	@Test
-//	@DisplayName("추억일지 태그된 친구 리스트 조회_성공")
-//	public void getTaggedFriendListByMemoryIdSuccess() throws Exception {
-//
-//		//When
-//		memoryService.getTaggedFriendListByMemoryId
-//		//Then
-//	}
+	@Test
+	@DisplayName("추억일지 태그된 친구 리스트 조회_성공")
+	public void getTaggedFriendListByMemoryIdSuccess() throws Exception {
+		//Given
+		String[] friendsList= {"junho", "snowfluppy"};
+		memoryService.memoryFriendTag(friendsList, memoryId);
+
+		//When
+		List<Map<String,String>> findFriendList = memoryService.getTaggedFriendListByMemoryId(memoryId);
+
+		//Then
+		assertEquals("junho", findFriendList.get(0).get("tagId"));
+		assertEquals("snowfluppy", findFriendList.get(1).get("tagId"));
+	}
+
+	@Test
+	@DisplayName("정보 태그 삭제_성공")
+	public void deleteInfoTag() throws Exception{
+		//Given
+		HashMap<String, String> map1 = new HashMap<>();
+		map1.put("info", "sea");
+		List<Map<String, String>> request = new ArrayList<>();
+		request.add(map1);
+		memoryService.createInfoTags(memoryId, request);
+
+		Map<String, String> infoId = new HashMap<>();
+		infoId.put("memoryId", Long.toString(memoryId));
+		infoId.put("info", "sea");
+
+		//When
+		memoryService.deleteInfoTag(infoId);
+
+		//Then
+		assertThat(0).isEqualTo(infoTagsRepository.findByInfoTagsIdMemory(memoryRepository.findById(memoryId).get()).size());
+	}
 }
