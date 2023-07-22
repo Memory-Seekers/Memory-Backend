@@ -13,6 +13,7 @@ import lookIT.lookITspring.dto.UserJoinRequestDto;
 import lookIT.lookITspring.entity.User;
 import lookIT.lookITspring.repository.UserRepository;
 import lookIT.lookITspring.security.JwtProvider;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,20 +33,20 @@ public class UserServiceTest {
 	@Autowired RedisTemplate redisTemplate;
 	@Autowired PasswordEncoder passwordEncoder;
 
+	String tagId ="test";
+	String email ="test@gmail.com";
+	String password ="memoryRecord123!";
+	String nickName ="test";
+
+	@BeforeEach
+	void setUp() throws Exception {
+		UserJoinRequestDto user1 = new UserJoinRequestDto(tagId, email, password, nickName);
+		userService.join(user1);
+	}
+
 	@Test
 	@DisplayName("회원가입_성공")
 	public void joinSuccess() throws Exception {
-		//Given
-		String tagId ="lookIt-test1";
-		String email ="thelookit06@gmail.com";
-		String password ="memoryRecord123!";
-		String nickName ="lookIt-test";
-
-		UserJoinRequestDto user1 = new UserJoinRequestDto(tagId, email, password, nickName);
-
-		//When
-		userService.join(user1);
-
 		//Then
 		User findUser = userRepository.findByEmail(email).get();
 		assertEquals(tagId, findUser.getTagId());
@@ -55,16 +56,9 @@ public class UserServiceTest {
 	@DisplayName("회원가입_중복회원예외")
 	public void joinFail1() throws Exception {
 		//Given
-		String tagId ="lookIt-test1";
-		String email ="thelookit06@gmail.com";
-		String password ="memoryRecord123!";
-		String nickName ="lookIt-test";
-
-		UserJoinRequestDto user1 = new UserJoinRequestDto(tagId, email, password, nickName);
 		UserJoinRequestDto user2 =  new UserJoinRequestDto(tagId, email, password, nickName);
 
 		//When
-		userService.join(user1);
 		IllegalStateException e = assertThrows(IllegalStateException.class,
 			() -> userService.join(user2));
 		assertThat(e.getMessage()).isEqualTo("이미 존재하는 이메일입니다.");
@@ -74,9 +68,6 @@ public class UserServiceTest {
 	@DisplayName("로그인_성공")
 	public void loginSuccess() throws Exception {
 		//Given
-		String email ="whitez1502@gmail.com";
-		String password ="memoryRecord123!";
-
 		HashMap<String, String> user1 = new HashMap<>();
 		user1.put("email", email);
 		user1.put("password", password);
@@ -94,7 +85,7 @@ public class UserServiceTest {
 	@DisplayName("로그인_가입되지않은이메일예외")
 	public void loginFail1() throws Exception {
 		//Given
-		String email ="1502@gmail.com";
+		String email ="1111@gmail.com";
 		String password ="memoryRecord123!";
 
 		HashMap<String, String> user1 = new HashMap<>();
@@ -111,7 +102,6 @@ public class UserServiceTest {
 	@DisplayName("로그인_일치하지않는비밀번호예외")
 	public void loginFail2() throws Exception {
 		//Given
-		String email ="whitez1502@gmail.com";
 		String password ="memoryRecord123";
 
 		HashMap<String, String> user1 = new HashMap<>();
@@ -128,9 +118,6 @@ public class UserServiceTest {
 	@DisplayName("로그아웃_성공")
 	public void logoutSuccess() throws Exception {
 		//Given
-		String email ="whitez1502@gmail.com";
-		String password ="memoryRecord123!";
-
 		HashMap<String, String> user1 = new HashMap<>();
 		user1.put("email", email);
 		user1.put("password", password);
@@ -149,8 +136,8 @@ public class UserServiceTest {
 	@DisplayName("중복아이디확인_성공")
 	public void checkIdDuplicateSuccess() throws Exception {
 		//Given
-		String newTagId = "test1";
-		String oldTagId = "whitez1502";
+		String newTagId = "testNew";
+		String oldTagId = "test";
 
 		//When
 		assertTrue(userService.checkIdDuplicate(newTagId));
@@ -161,7 +148,7 @@ public class UserServiceTest {
 	@DisplayName("비밀번호이메일인증_없는이메일예외")
 	public void emailConfirmFail() throws Exception {
 		//Given
-		String email ="test@gmail.com";
+		String email ="testFail@gmail.com";
 
 		//When
 		IllegalStateException e = assertThrows(IllegalStateException.class,
@@ -184,7 +171,6 @@ public class UserServiceTest {
 	@DisplayName("비밀번호재생성_성공")
 	public void regeneratePasswordSuccess() throws Exception {
 		//Given
-		String email ="whitez1502@gmail.com";
 		String password ="modifiedPassword";
 
 		HashMap<String, String> user1 = new HashMap<>();
