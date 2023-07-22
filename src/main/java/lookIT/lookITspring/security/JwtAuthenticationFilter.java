@@ -5,17 +5,21 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+@RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtProvider jwtAuthenticationProvider;
-
-    public JwtAuthenticationFilter(JwtProvider provider) {
-        jwtAuthenticationProvider = provider;
-    }
+    private final RedisTemplate redisTemplate;
+//    public JwtAuthenticationFilter(JwtProvider provider) {
+//        jwtAuthenticationProvider = provider;
+//    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
@@ -23,11 +27,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = jwtAuthenticationProvider.resolveToken(request);
 
         if (token != null && jwtAuthenticationProvider.validateToken(token)) {
-            Authentication authentication = jwtAuthenticationProvider.getAuthentication(token);
+            String isLogout = (String)redisTemplate.opsForValue().get(token);
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            if (ObjectUtils.isEmpty(isLogout)) {
+                Authentication authentication = jwtAuthenticationProvider.getAuthentication(token);
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
         }
-
         filterChain.doFilter(request, response);
     }
 }

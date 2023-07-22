@@ -1,18 +1,27 @@
 package lookIT.lookITspring.security;
 
 import lombok.RequiredArgsConstructor;
+import lookIT.lookITspring.config.JwtSecurityConfig;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @RequiredArgsConstructor
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
+    private final JwtProvider jwtProvider;
+    private final RedisTemplate redisTemplate;
+
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        JwtAuthenticationFilter customFilter = new JwtAuthenticationFilter(jwtProvider, redisTemplate);
+        http.addFilterBefore(customFilter, UsernamePasswordAuthenticationFilter.class);
+
         http
             .formLogin().disable()
             .httpBasic().disable()
@@ -54,7 +63,9 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .antMatchers("/friends/accept").permitAll()
             .antMatchers("/friends/reject").permitAll()
             .antMatchers("/friends/list").permitAll()
-            .anyRequest().authenticated();
+            .anyRequest().authenticated()
+            .and()
+            .apply(new JwtSecurityConfig(jwtProvider, redisTemplate));
     }
 
     private static final String[] AUTH_WHITELIST = {

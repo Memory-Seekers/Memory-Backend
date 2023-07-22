@@ -27,9 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     private final UserService userService;
-    private final EmailService emailService;
     private final UserRepository userRepository;
-    private final JwtProvider jwtProvider;
 
     @PostMapping("/join")
     @ResponseStatus(HttpStatus.OK)
@@ -54,24 +52,16 @@ public class UserController {
 
     @PostMapping("/emailConfirm")
     public String emailConfirm(@RequestParam String email) throws Exception {
-        try {
-            User user = userRepository.findByEmail(email).get();
-        } catch (Exception e) {
-            return "해당 이메일로 가입된 유저가 없습니다.";
-        }
+        return userService.emailConfirm(email);
+    }
 
-        String confirm = emailService.sendSimpleMessage(email);
-        return confirm;
+    @PostMapping("/emailConfirmJoin")
+    public String emailConfirmJoin(@RequestParam String email) throws Exception {
+        return userService.emailConfirmJoin(email);
     }
 
     @PostMapping("/findPassword")
     public boolean regeneratePassword(@RequestBody Map<String, String> request) {
         return userService.regeneratePassword(request);
-    }
-
-    @PostMapping("/emailConfirmJoin")
-    public String emailConfirmJoin(@RequestParam String email) throws Exception {
-        String confirm = emailService.sendSimpleMessage2(email);
-        return confirm;
     }
 }

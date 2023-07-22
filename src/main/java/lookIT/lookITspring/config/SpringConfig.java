@@ -1,5 +1,6 @@
 package lookIT.lookITspring.config;
 
+import java.util.Properties;
 import lookIT.lookITspring.repository.CollectionsRepository;
 import lookIT.lookITspring.repository.FriendTagsRepository;
 import lookIT.lookITspring.repository.FriendsRepository;
@@ -13,6 +14,7 @@ import lookIT.lookITspring.repository.UserRepository;
 import lookIT.lookITspring.repository.MemorySpotRepository;
 import lookIT.lookITspring.security.CustomUserDetailsService;
 import lookIT.lookITspring.security.JwtProvider;
+import lookIT.lookITspring.service.EmailService;
 import lookIT.lookITspring.service.FriendService;
 import lookIT.lookITspring.service.LandmarkService;
 import lookIT.lookITspring.service.MemoryService;
@@ -20,15 +22,45 @@ import lookIT.lookITspring.service.Photo4CutService;
 import lookIT.lookITspring.service.UserService;
 import lookIT.lookITspring.service.MemorySpotService;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Configuration
 @EnableWebSecurity
+@EnableRedisRepositories
 public class SpringConfig {
+    @Value("${spring.redis.host}")
+    private String redis_host;
+    @Value("${spring.redis.port}")
+    private int redis_port;
+
+    @Value("${mail.smtp.port}")
+    private int port;
+    @Value("${mail.smtp.socketFactory.port}")
+    private int socketPort;
+    @Value("${mail.smtp.auth}")
+    private boolean auth;
+    @Value("${mail.smtp.starttls.enable}")
+    private boolean starttls;
+    @Value("${mail.smtp.starttls.required}")
+    private boolean startlls_required;
+    @Value("${mail.smtp.socketFactory.fallback}")
+    private boolean fallback;
+    @Value("${AdminMail.id}")
+    private String id;
+    @Value("${AdminMail.password}")
+    private String password;
 
     private final UserRepository userRepository;
     private final MemorySpotRepository memorySpotRepository;
@@ -62,6 +94,21 @@ public class SpringConfig {
         this.collectionsRepository = collectionsRepository;
     }
 
+    // lettuce
+    @Bean
+    public RedisConnectionFactory redisConnectionFactory() {
+        return new LettuceConnectionFactory(redis_host, redis_port);
+    }
+
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate() {
+        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setConnectionFactory(redisConnectionFactory());
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new StringRedisSerializer());
+        return redisTemplate;
+    }
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -73,8 +120,36 @@ public class SpringConfig {
     }
 
     @Bean
-    public UserService memberService() {
-        return new UserService(userRepository, passwordEncoder(), jwtProvider());
+    public JavaMailSender javaMailService() {
+        JavaMailSenderImpl javaMailSender = new JavaMailSenderImpl();
+        javaMailSender.setHost("smtp.gmail.com");
+        javaMailSender.setUsername(id);
+        javaMailSender.setPassword(password);
+        javaMailSender.setPort(port);
+        javaMailSender.setJavaMailProperties(getMailProperties());
+        javaMailSender.setDefaultEncoding("UTF-8");
+        return javaMailSender;
+    }
+
+    private Properties getMailProperties() {
+        Properties pt = new Properties();
+        pt.put("mail.smtp.socketFactory.port", socketPort);
+        pt.put("mail.smtp.auth", auth);
+        pt.put("mail.smtp.starttls.enable", starttls);
+        pt.put("mail.smtp.starttls.required", startlls_required);
+        pt.put("mail.smtp.socketFactory.fallback", fallback);
+        pt.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+        return pt;
+    }
+
+    @Bean
+    public EmailService emailService() {
+        return new EmailService(javaMailService());
+    }
+
+    @Bean
+    public UserService userService() {
+        return new UserService(userRepository, passwordEncoder(), jwtProvider(), redisTemplate(), emailService());
     }
 
     @Bean
