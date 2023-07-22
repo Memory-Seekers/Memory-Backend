@@ -1,6 +1,5 @@
 package lookIT.lookITspring.service;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
@@ -10,6 +9,7 @@ import java.util.Map;
 import javax.transaction.Transactional;
 import lookIT.lookITspring.dto.LinePathDto;
 import lookIT.lookITspring.dto.MemoryCreateRequestDto;
+import lookIT.lookITspring.dto.UserJoinRequestDto;
 import lookIT.lookITspring.entity.InfoTags;
 import lookIT.lookITspring.entity.LinePath;
 import lookIT.lookITspring.entity.Memory;
@@ -39,8 +39,13 @@ public class MemoryServiceTest {
 
 	@BeforeEach
 	void setUp() throws Exception{
-		String email ="whitez1502@gmail.com";
+		String tagId ="test";
+		String email ="test@gmail.com";
 		String password ="memoryRecord123!";
+		String nickName ="test";
+		UserJoinRequestDto userDto1 = new UserJoinRequestDto(tagId, email, password, nickName);
+		userService.join(userDto1);
+
 		HashMap<String, String> user1 = new HashMap<>();
 		user1.put("email", email);
 		user1.put("password", password);
@@ -61,7 +66,7 @@ public class MemoryServiceTest {
 	public void memoryCreateSuccess() throws Exception {
 		//Then
 		Memory memory = memoryRepository.findById(memoryId).get();
-		User user = userRepository.findByEmail("whitez1502@gmail.com").get();
+		User user = userRepository.findByEmail("test@gmail.com").get();
 		List<LinePath> findPath = linePathRepository.findByMemory(memory);
 
 		assertEquals(user.getTagId(), memory.getUser().getTagId());
@@ -97,15 +102,29 @@ public class MemoryServiceTest {
 	@DisplayName("추억일지 태그된 친구 리스트 조회_성공")
 	public void getTaggedFriendListByMemoryIdSuccess() throws Exception {
 		//Given
-		String[] friendsList= {"junho", "snowfluppy"};
+		String tagId1 ="testFriend1";
+		String email1 ="testFriend1@gmail.com";
+		String password1 ="memoryRecord123!";
+		String nickName1 ="testFriend1";
+		UserJoinRequestDto userDto1 = new UserJoinRequestDto(tagId1, email1, password1, nickName1);
+		userService.join(userDto1);
+
+		String tagId2 ="testFriend2";
+		String email2 ="testFriend2@gmail.com";
+		String password2 ="memoryRecord123!";
+		String nickName2 ="testFriend2";
+		UserJoinRequestDto userDto2 = new UserJoinRequestDto(tagId2, email2, password2, nickName2);
+		userService.join(userDto2);
+
+		String[] friendsList= {"testFriend1", "testFriend2"};
 		memoryService.memoryFriendTag(friendsList, memoryId);
 
 		//When
 		List<Map<String,String>> findFriendList = memoryService.getTaggedFriendListByMemoryId(memoryId);
 
 		//Then
-		assertEquals("junho", findFriendList.get(0).get("tagId"));
-		assertEquals("snowfluppy", findFriendList.get(1).get("tagId"));
+		assertEquals("testFriend1", findFriendList.get(0).get("tagId"));
+		assertEquals("testFriend2", findFriendList.get(1).get("tagId"));
 	}
 
 	@Test
@@ -126,6 +145,6 @@ public class MemoryServiceTest {
 		memoryService.deleteInfoTag(infoId);
 
 		//Then
-		assertThat(0).isEqualTo(infoTagsRepository.findByInfoTagsIdMemory(memoryRepository.findById(memoryId).get()).size());
+		assertEquals(0, infoTagsRepository.findByInfoTagsIdMemory(memoryRepository.findById(memoryId).get()).size());
 	}
 }
