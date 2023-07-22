@@ -83,57 +83,36 @@ public class FriendServiceTest {
     @DisplayName("특정 태그 Id를 포함하는 친구목록 조회 - 0명")
     public void 특정_태그_Id를_포함하는_친구목록_조회_0명() {
         //Given
-        Integer size = -1;
 
         //When
         List<FriendListDto> foundFriends = friendService.friendInfoIncludingTagId("x1xy2yz3zk4k", token);
 
         //Then
-        Integer numOfFriends = foundFriends.size();
-        if (numOfFriends.equals(0)) {
-            size = null;
-        } else {
-            size = numOfFriends;
-        }
-        assertNull(size, "Assertion failed: Number of friends including given Id is not zero");
+        assertTrue(foundFriends.isEmpty(), "Assertion failed: Number of friends found including given Id is not zero");
     }
 
     @Test
     @DisplayName("특정 태그 Id를 포함하는 친구목록 조회 - 1명")
     public void 특정_태그_Id를_포함하는_친구목록_조회_1명() {
         //Given
-        Integer size = -1;
 
         //When
         List<FriendListDto> foundFriends = friendService.friendInfoIncludingTagId("x1xy2yz3z", token);
 
         //Then
-        Integer numOfFriends = foundFriends.size();
-        if (numOfFriends.equals(0)) {
-            size = null;
-        } else {
-            size = numOfFriends;
-        }
-        assertEquals("Assertion failed: Number of friends including given Id is not one", 1, size);
+        assertEquals("Assertion failed: Number of friends found including given Id is not one", 1, foundFriends.size());
     }
 
     @Test
     @DisplayName("특정 태그 Id를 포함하는 친구목록 조회 - 여러명(2명 이상)")
     public void 특정_태그_Id를_포함하는_친구목록_조회_여러명() {
         //Given
-        Integer size = -1;
 
         //When
         List<FriendListDto> foundFriends = friendService.friendInfoIncludingTagId("friend", token);
 
         //Then
-        Integer numOfFriends = foundFriends.size();
-        if (numOfFriends.equals(0)) {
-            size = null;
-        } else {
-            size = numOfFriends;
-        }
-        assert size > 1 : "Assertion failed: Number of friends including given Id is under two";
+        assert foundFriends.size() > 1 : "Assertion failed: Number of friends found including given Id is under two";
     }
 
     @Test
@@ -198,7 +177,6 @@ public class FriendServiceTest {
     public void 내가_받은_친구요청_리스트_0명() {
         //Given
         friendsRepository.deleteAll();
-        Integer size = -1;
 
         //When
         List<Friends> friendsList = friendsRepository.findAll().stream()
@@ -206,15 +184,8 @@ public class FriendServiceTest {
             .filter(friends -> "userTagId".equals(friends.getFriendsId().getFriend().getTagId()))
             .collect(Collectors.toList());
 
-        Integer numOfFriendRequest = friendsList.size();
-        if (numOfFriendRequest.equals(0)) {
-            size = null;
-        } else {
-            size = numOfFriendRequest;
-        }
-
         //Then
-        assertNull(size, "Assertion failed: Number of friends including given Id is not zero");
+        assertTrue(friendsList.isEmpty(), "Assertion failed: Number of friends including given Id is not zero");
     }
 
     @Test
@@ -222,7 +193,6 @@ public class FriendServiceTest {
     public void 내가_받은_친구요청_리스트_1명() {
         //Given
         friendsRepository.deleteAll();
-        Integer size = -1;
         friendService.friendRequest("userTagId" ,token2);
 
         //When
@@ -231,15 +201,8 @@ public class FriendServiceTest {
             .filter(friends -> "userTagId".equals(friends.getFriendsId().getFriend().getTagId()))
             .collect(Collectors.toList());
 
-        Integer numOfFriendRequest = friendsList.size();
-        if (numOfFriendRequest.equals(0)) {
-            size = null;
-        } else {
-            size = numOfFriendRequest;
-        }
-
         //Then
-        assertEquals("Assertion failed: Number of friend request is not one", 1, size);
+        assertEquals("Assertion failed: Number of friend request is not one", 1, friendsList.size());
     }
 
     @Test
@@ -247,7 +210,6 @@ public class FriendServiceTest {
     public void 내가_받은_친구요청_리스트_여러명() {
         //Given
         friendsRepository.deleteAll();
-        Integer size = -1;
         friendService.friendRequest("userTagId" ,token2);
         friendService.friendRequest("userTagId",token3);
 
@@ -257,15 +219,8 @@ public class FriendServiceTest {
             .filter(friends -> "userTagId".equals(friends.getFriendsId().getFriend().getTagId()))
             .collect(Collectors.toList());
 
-        Integer numOfFriendRequest = friendsList.size();
-        if (numOfFriendRequest.equals(0)) {
-            size = null;
-        } else {
-            size = numOfFriendRequest;
-        }
-
         //Then
-        assertEquals("Assertion failed: Number of friend request is not two", 2, size);
+        assertEquals("Assertion failed: Number of friend request is not two", 2, friendsList.size());
     }
 
     @Test
@@ -311,20 +266,12 @@ public class FriendServiceTest {
     public void 내가_보낸_친구요청_리스트_0명() {
         //Given
         friendsRepository.deleteAll();
-        Integer size = -1;
 
         //When
         List<FriendListDto> friendsList = friendService.myRequestList(token);
 
-        Integer numOfFriendRequest = friendsList.size();
-        if (numOfFriendRequest.equals(0)) {
-            size = null;
-        } else {
-            size = numOfFriendRequest;
-        }
-
         //Then
-        assertNull(size, "Assertion failed: Number of friend request I've sent is not zero");
+        assertTrue(friendsList.isEmpty(), "Assertion failed: Number of friend request I've sent is not zero");
     }
 
     @Test
@@ -332,21 +279,13 @@ public class FriendServiceTest {
     public void 내가_보낸_친구요청_리스트_1명() {
         //Given
         friendsRepository.deleteAll();
-        Integer size = -1;
         friendService.friendRequest("friend1x1xy2yz3z" ,token);
 
         //When
         List<FriendListDto> friendsList = friendService.myRequestList(token);
 
-        Integer numOfFriendRequest = friendsList.size();
-        if (numOfFriendRequest.equals(0)) {
-            size = null;
-        } else {
-            size = numOfFriendRequest;
-        }
-
         //Then
-        assertEquals("Assertion failed: Number of friend request is not one", 1, size);
+        assertEquals("Assertion failed: Number of friend request is not one", 1, friendsList.size());
     }
 
     @Test
@@ -354,22 +293,14 @@ public class FriendServiceTest {
     public void 내가_보낸_친구요청_리스트_여러명() {
         //Given
         friendsRepository.deleteAll();
-        Integer size = -1;
         friendService.friendRequest("friend1x1xy2yz3z" ,token);
         friendService.friendRequest("friend2TagId",token);
 
         //When
         List<FriendListDto> friendsList = friendService.myRequestList(token);
 
-        Integer numOfFriendRequest = friendsList.size();
-        if (numOfFriendRequest.equals(0)) {
-            size = null;
-        } else {
-            size = numOfFriendRequest;
-        }
-
         //Then
-        assertEquals("Assertion failed: Number of friend request is not two", 2, size);
+        assertEquals("Assertion failed: Number of friend request is not two", 2, friendsList.size());
     }
 
     @Test
@@ -383,15 +314,9 @@ public class FriendServiceTest {
 
         //When
         List<FriendListDto> myFriendList = friendService.getMyfriendList(token);
-        Integer numOfFriendRequest = myFriendList.size();
-        if (numOfFriendRequest.equals(0)) {
-            size = null;
-        } else {
-            size = numOfFriendRequest;
-        }
 
         //Then
-        assertNull(size, "Assertion failed: Number of friends is not zero");
+        assertTrue(myFriendList.isEmpty(), "Assertion failed: Number of friends is not zero");
     }
 
     @Test
@@ -407,15 +332,8 @@ public class FriendServiceTest {
         friendService.friendAccept("userTagId" ,token2);
         List<FriendListDto> friendsList = friendService.getMyfriendList(token);
 
-        Integer numOfFriendRequest = friendsList.size();
-        if (numOfFriendRequest.equals(0)) {
-            size = null;
-        } else {
-            size = numOfFriendRequest;
-        }
-
         //Then
-        assertEquals("Assertion failed: Number of friends is not one", 1, size);
+        assertEquals("Assertion failed: Number of friends is not one", 1, friendsList.size());
     }
 
     @Test
@@ -423,7 +341,6 @@ public class FriendServiceTest {
     public void 내_친구_리스트_여러명() {
         //Given
         friendsRepository.deleteAll();
-        Integer size = -1;
         friendService.friendRequest("friend1x1xy2yz3z" ,token);
         friendService.friendRequest("friend2TagId",token);
 
@@ -432,15 +349,9 @@ public class FriendServiceTest {
         friendService.friendAccept("userTagId",token3);
 
         List<FriendListDto> friendsList = friendService.getMyfriendList(token);
-        Integer numOfFriendRequest = friendsList.size();
-        if (numOfFriendRequest.equals(0)) {
-            size = null;
-        } else {
-            size = numOfFriendRequest;
-        }
 
         //Then
-        assertEquals("Assertion failed: Number of friends is not two", 2, size);
+        assertEquals("Assertion failed: Number of friends is not two", 2, friendsList.size());
     }
 
 }
