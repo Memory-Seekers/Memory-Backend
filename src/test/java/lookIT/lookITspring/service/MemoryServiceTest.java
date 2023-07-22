@@ -110,7 +110,7 @@ public class MemoryServiceTest {
 
 	@Test
 	@DisplayName("정보 태그 삭제_성공")
-	public void deleteInfoTag() throws Exception{
+	public void deleteInfoTagSuccess() throws Exception{
 		//Given
 		HashMap<String, String> map1 = new HashMap<>();
 		map1.put("info", "sea");
