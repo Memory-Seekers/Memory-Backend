@@ -17,6 +17,7 @@ import lookIT.lookITspring.repository.MemoryRepository;
 import lookIT.lookITspring.repository.MemorySpotRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -175,30 +176,4 @@ public class MemorySpotService {
         }
     }
 
-    @Transactional
-    public Boolean deleteSpot(Double spotLatitude, Double spotLongitude) {
-        List<MemorySpot> memorySpots = memorySpotRepository.findBySpotLatitudeAndSpotLongitude(
-            spotLatitude, spotLongitude);
-        if (!memorySpots.isEmpty()) {
-            for (MemorySpot memorySpot : memorySpots) {
-                Long spotId = memorySpot.getSpotId();
-                MemoryPhoto memoryPhoto = memoryPhotoRepository.findByMemorySpotSpotId(spotId);
-                System.out.println(spotId);
-                if (memoryPhoto != null) {
-                    try {
-                        deleteSpotPhoto(memoryPhoto.getMemoryPhoto());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        throw e;
-                    }
-                } else {
-                    System.out.println("No memory Photo.");
-                }
-                memorySpotRepository.deleteById(spotId);
-            }
-            return true;
-        } else {
-            throw new IllegalArgumentException("Memory spot not found.");
-        }
-    }
 }
