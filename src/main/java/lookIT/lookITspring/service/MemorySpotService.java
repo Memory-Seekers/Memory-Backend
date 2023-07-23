@@ -141,15 +141,16 @@ public class MemorySpotService {
             boolean isS3Object = s3Client.doesObjectExist(bucket, key);
             if (isS3Object) {
                 s3Client.deleteObject(bucket, key);
-            } else {
+            } /*else {
                 throw new Exception("S3 object does not exist for the given key.");
-            }
+            }*/
         } catch (Exception e) {
-            throw new RuntimeException("Failed - Delete S3 file", e);
+            throw new IllegalArgumentException("S3 object does not exist for the given key.", e);
         }
     }
 
     private void deleteSpotPhoto(String photoUrl) {
+        System.out.println(photoUrl);
         MemoryPhoto memoryPhoto = memoryPhotoRepository.findByMemoryPhoto(photoUrl);
 
         if (memoryPhoto != null) {

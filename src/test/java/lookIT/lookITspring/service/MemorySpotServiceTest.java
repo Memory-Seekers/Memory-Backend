@@ -26,6 +26,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.transaction.Transactional;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -51,11 +53,6 @@ public class MemorySpotServiceTest {
     @Autowired
     private LinePathRepository linePathRepository;
 
-    @Value("${cloud.aws.s3.bucket}")
-    private String bucket;
-    @Autowired
-    private AmazonS3 s3Client;
-
     private Long memoryID;
     @BeforeEach
     void setUp() throws Exception{
@@ -79,66 +76,6 @@ public class MemorySpotServiceTest {
         MemoryCreateRequestDto requestDto = new MemoryCreateRequestDto(pathList);
 
         memoryID = memoryService.memoryCreate(token1, requestDto);
-    }
-
-    @Test
-    @DisplayName("추억일지 스팟 생성(사진 매칭) 성공- valid memoryID")
-    public void createNewMemorySpotTest_Success(){
-
-        Double spotLatitude = 12.1213;
-        Double spotLongitude = 12.1212;
-        Long memoryId = memoryID;
-        String imageUrl = "http://look-it.com/images%ED%url";
-        String key = "http://look-it.com/images%ED%key";
-
-        // 테스트 실행
-        boolean result = memorySpotService.createNewMemorySpot(spotLatitude, spotLongitude, memoryId, imageUrl, key);
-
-        // 테스트 검증
-        assertTrue(result);
-
-        List<MemorySpot> memorySpots = memorySpotRepository.findBySpotLatitudeAndSpotLongitude(spotLatitude, spotLongitude);
-
-        assertNotNull(memorySpots);
-        assertFalse(memorySpots.isEmpty());
-
-        MemorySpot foundMemorySpot = null;
-        for (MemorySpot memorySpot : memorySpots) {
-            if (spotLatitude.equals(memorySpot.getSpotLatitude()) && spotLongitude.equals(memorySpot.getSpotLongitude())) {
-                foundMemorySpot = memorySpot;
-                break;
-            }
-        }
-
-        assertNotNull(foundMemorySpot);
-        assertEquals(spotLatitude, foundMemorySpot.getSpotLatitude());
-        assertEquals(spotLongitude, foundMemorySpot.getSpotLongitude());
-
-        Memory memory = foundMemorySpot.getMemory();
-        assertNotNull(memory);
-        assertEquals(memoryId, memory.getMemoryId());
-
-        MemoryPhoto memoryPhoto = memoryPhotoRepository.findByMemoryPhoto(imageUrl);
-        assertNotNull(memoryPhoto);
-        assertEquals(imageUrl, memoryPhoto.getMemoryPhoto());
-        assertEquals(key, memoryPhoto.getMemoryPhotoKey());
-    }
-
-    @Test
-    @DisplayName("추억일지 스팟 생성(사진 매칭) 실패 - Invalid memoryID")
-    public void createNewMemorySpotTest_Exception() throws Exception{
-        Double spotLatitude = 12.1213;
-        Double spotLongitude = 12.1212;
-        Long memoryId = 5000L;
-        String imageUrl = "http://look-it.com/images%ED%url";
-        String key = "http://look-it.com/images%ED%key";
-
-        try {
-            memorySpotService.createNewMemorySpot(spotLatitude, spotLongitude, memoryId, imageUrl, key);
-            fail("Expected IllegalArgumentException to be thrown, but it was not thrown.");
-        } catch (IllegalArgumentException e) {
-            assertEquals("Invalid memoryId: " + memoryId, e.getMessage());
-        }
     }
 
     @Test
@@ -224,6 +161,18 @@ public class MemorySpotServiceTest {
             fail("Expected IllegalArgumentException to be thrown, but it was not thrown.");
         } catch (IllegalArgumentException e) {
             assertEquals("Invalid memoryId" , e.getMessage());
+        }
+    }
+
+    @Test
+    @DisplayName("추억일지 사진 삭제 실패 - 존재하지 않는 사진")
+    public void deletePhotoFail_NonExistUrl(){
+        String photoUrl = "s3://capstone-lookit//096c312d-2023-05-20T10:02:53.12345678";
+        try{
+            memorySpotService.deletePhoto(photoUrl);
+            fail("Expected IllegalArgumentException to be thrown, but it was not thrown.");
+        }catch(IllegalArgumentException e){
+            assertEquals("Memory photo not found." , e.getMessage());
         }
     }
 

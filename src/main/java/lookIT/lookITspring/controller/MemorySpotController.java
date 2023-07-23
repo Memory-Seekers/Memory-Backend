@@ -39,7 +39,7 @@ public class MemorySpotController {
         @RequestParam("memoryId") Long memoryId
     ) throws IOException {
 
-        String fileName = file.getOriginalFilename();
+                String fileName = file.getOriginalFilename();
         String folderName = "memoryphoto";
         LocalDateTime now = LocalDateTime.now();
         String nowTime = now.toString();
@@ -49,19 +49,17 @@ public class MemorySpotController {
         metadata.setContentType(file.getContentType());
 
         PutObjectRequest request = new PutObjectRequest(bucket, key, file.getInputStream(),
-            metadata);
+                metadata);
         request.setCannedAcl(CannedAccessControlList.PublicRead);
         s3Client.putObject(request);
 
-        String imageUrl = s3Client.getUrl(bucket, key).toString();
-        if (imageUrl == null) {
-            System.out.println("S3 Err - s3Client is null");
-            return false;
-        } else {
+        try {
+            String imageUrl = s3Client.getUrl(bucket, key).toString();
             return memorySpotService.createNewMemorySpot(spotLatitude, spotLongitude, memoryId,
-                imageUrl, key);
+                    imageUrl, key);
+        }catch (NullPointerException e){
+            throw new NullPointerException("S3 client err - imageUrl is null");
         }
-
     }
 
     @GetMapping("/photo")
@@ -76,7 +74,7 @@ public class MemorySpotController {
     }
 
     @DeleteMapping("/photo")
-    public Boolean MemorySpotPhoto(@RequestParam("memoryPhoto") String photoUrl) {
+    public Boolean DeleteMemorySpotPhoto(@RequestParam("memoryPhoto") String photoUrl) {
         return memorySpotService.deletePhoto(photoUrl);
     }
 }
