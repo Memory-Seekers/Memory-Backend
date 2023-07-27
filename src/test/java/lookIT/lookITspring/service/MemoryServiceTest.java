@@ -9,6 +9,7 @@ import java.util.Map;
 import javax.transaction.Transactional;
 import lookIT.lookITspring.dto.LinePathDto;
 import lookIT.lookITspring.dto.MemoryCreateRequestDto;
+import lookIT.lookITspring.dto.MemoryListDto;
 import lookIT.lookITspring.dto.UserJoinRequestDto;
 import lookIT.lookITspring.entity.InfoTags;
 import lookIT.lookITspring.entity.LinePath;
@@ -23,6 +24,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.util.AssertionErrors;
 
 @SpringBootTest
 @Transactional
@@ -35,7 +37,8 @@ public class MemoryServiceTest {
 	@Autowired LinePathRepository linePathRepository;
 	@Autowired InfoTagsRepository infoTagsRepository;
 
-	Long memoryId;
+	private Long memoryId;
+	private String token;
 
 	@BeforeEach
 	void setUp() throws Exception{
@@ -49,7 +52,7 @@ public class MemoryServiceTest {
 		HashMap<String, String> user1 = new HashMap<>();
 		user1.put("email", email);
 		user1.put("password", password);
-		String token1 = userService.login(user1);
+		token = userService.login(user1);
 
 		ArrayList<LinePathDto> pathList = new ArrayList<>();
 		LinePathDto path1 = new LinePathDto(101.13, 101.2);
@@ -58,7 +61,7 @@ public class MemoryServiceTest {
 		pathList.add(path2);
 		MemoryCreateRequestDto requestDto = new MemoryCreateRequestDto(pathList);
 
-		memoryId = memoryService.memoryCreate(token1, requestDto);
+		memoryId = memoryService.memoryCreate(token, requestDto);
 	}
 
 	@Test
@@ -147,4 +150,146 @@ public class MemoryServiceTest {
 		//Then
 		assertEquals(0, infoTagsRepository.findByInfoTagsIdMemory(memoryRepository.findById(memoryId).get()).size());
 	}
+
+	@Test
+	@DisplayName("Id로 추억일지 리스트 조회 - 0개")
+	public void	Id로_추억일지_리스트_조회_0개() throws Exception{
+		//Given
+		String tagId1 ="testFriend1";
+		String email1 ="testFriend1@gmail.com";
+		String password1 ="memoryRecord123!";
+		String nickName1 ="testFriend1";
+		UserJoinRequestDto userDto1 = new UserJoinRequestDto(tagId1, email1, password1, nickName1);
+		userService.join(userDto1);
+
+		HashMap<String, String> user2 = new HashMap<>();
+		user2.put("email", email1);
+		user2.put("password", password1);
+		String token1 = userService.login(user2);
+
+		//When
+		Integer expected_size = memoryService.memoryListInquiry(token1).size();
+
+		//Then
+		AssertionErrors.assertEquals("Assertion failed: Memory list not 0", 0, expected_size);
+	}
+
+	@Test
+	@DisplayName("Id로 추억일지 리스트 조회 - 1개")
+	public void	Id로_추억일지_리스트_조회_1개() throws Exception{
+		//Given
+		//When
+		Integer expected_size = memoryService.memoryListInquiry(token).size();
+
+		//Then
+		AssertionErrors.assertEquals("Assertion failed: Memory list not 0", 1, expected_size);
+	}
+
+	@Test
+	@DisplayName("Id로 추억일지 리스트 조회 - 여러개")
+	public void	Id로_추억일지_리스트_조회_여러개() throws Exception{
+		//Given
+		ArrayList<LinePathDto> pathList = new ArrayList<>();
+		LinePathDto path1 = new LinePathDto(10.21564, 11.0216588);
+		LinePathDto path2 = new LinePathDto(10.22345, 11.101);
+		pathList.add(path1);
+		pathList.add(path2);
+		MemoryCreateRequestDto requestDto = new MemoryCreateRequestDto(pathList);
+		memoryService.memoryCreate(token, requestDto);
+
+		//When
+		Integer expected_size = memoryService.memoryListInquiry(token).size();
+
+		//Then
+		AssertionErrors.assertEquals("Assertion failed: Memory list not 0", 2, expected_size);
+	}
+
+	@Test
+	@DisplayName("친구 추억일지 리스트 조회 - 0개")
+	public void	친구_추억일지_리스트_조회_0개() throws Exception{
+		//Given
+		String tagId1 ="testFriend1";
+		String email1 ="testFriend1@gmail.com";
+		String password1 ="memoryRecord123!";
+		String nickName1 ="testFriend1";
+		UserJoinRequestDto userDto1 = new UserJoinRequestDto(tagId1, email1, password1, nickName1);
+		userService.join(userDto1);
+
+		//When
+		Integer expected_size = memoryService.friendMemoryListInquiry(tagId1).size();
+
+		//Then
+		AssertionErrors.assertEquals("Assertion failed: Memory list not 0", 0, expected_size);
+	}
+
+	@Test
+	@DisplayName("친구 추억일지 리스트 조회 - 1개")
+	public void	친구_추억일지_리스트_조회_1개() throws Exception{
+		//Given
+		String tagId1 ="testFriend1";
+		String email1 ="testFriend1@gmail.com";
+		String password1 ="memoryRecord123!";
+		String nickName1 ="testFriend1";
+		UserJoinRequestDto userDto1 = new UserJoinRequestDto(tagId1, email1, password1, nickName1);
+		userService.join(userDto1);
+
+		HashMap<String, String> user1 = new HashMap<>();
+		user1.put("email", email1);
+		user1.put("password", password1);
+		String token1 = userService.login(user1);
+
+		ArrayList<LinePathDto> pathList = new ArrayList<>();
+		LinePathDto path1 = new LinePathDto(10.21564, 11.0216588);
+		LinePathDto path2 = new LinePathDto(10.22345, 11.101);
+		pathList.add(path1);
+		pathList.add(path2);
+		MemoryCreateRequestDto requestDto = new MemoryCreateRequestDto(pathList);
+		memoryService.memoryCreate(token1, requestDto);
+
+		//When
+		Integer expected_size = memoryService.friendMemoryListInquiry(tagId1).size();
+
+		//Then
+		AssertionErrors.assertEquals("Assertion failed: Memory list not 0", 1, expected_size);
+	}
+
+	@Test
+	@DisplayName("친구 추억일지 리스트 조회 - 여러개")
+	public void	친구_추억일지_리스트_조회_여러개() throws Exception{
+		//Given
+		String tagId1 ="testFriend1";
+		String email1 ="testFriend1@gmail.com";
+		String password1 ="memoryRecord123!";
+		String nickName1 ="testFriend1";
+		UserJoinRequestDto userDto1 = new UserJoinRequestDto(tagId1, email1, password1, nickName1);
+		userService.join(userDto1);
+
+		HashMap<String, String> user1 = new HashMap<>();
+		user1.put("email", email1);
+		user1.put("password", password1);
+		String token1 = userService.login(user1);
+
+		ArrayList<LinePathDto> pathList = new ArrayList<>();
+		LinePathDto path1 = new LinePathDto(10.21564, 11.0216588);
+		LinePathDto path2 = new LinePathDto(10.22345, 11.101);
+		pathList.add(path1);
+		pathList.add(path2);
+		MemoryCreateRequestDto requestDto = new MemoryCreateRequestDto(pathList);
+		memoryService.memoryCreate(token1, requestDto);
+
+		ArrayList<LinePathDto> pathList2 = new ArrayList<>();
+		LinePathDto path3 = new LinePathDto(11.54654, 68.16549);
+		LinePathDto path4 = new LinePathDto(11.56989, 68.36549);
+		pathList2.add(path3);
+		pathList2.add(path4);
+		MemoryCreateRequestDto requestDto2 = new MemoryCreateRequestDto(pathList2);
+		memoryService.memoryCreate(token1, requestDto2);
+
+		//When
+		Integer expected_size = memoryService.friendMemoryListInquiry(tagId1).size();
+
+		//Then
+		AssertionErrors.assertEquals("Assertion failed: Memory list not 0", 2, expected_size);
+	}
+
 }
