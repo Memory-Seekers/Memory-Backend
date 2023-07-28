@@ -25,6 +25,7 @@ import org.testng.AssertJUnit;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.*;
@@ -144,6 +145,28 @@ class Photo4cutControllerTest {
         Long photo4cutID = photo4cutController.uploadFile(mockMultipartFile,landmark.getLandmarkId(), token);
         boolean result = photo4cutController.deleteTag(photo4cutID);
         assertTrue(result);
+    }
+
+    @Test
+    @DisplayName("내가 생성한 추억네컷 리스트 조회")
+    public void MyMemory4CutTest() throws Exception{
+        Landmark landmark = Landmark.builder()
+                .landmarkName("Test Landmark")
+                .landLatitude(0.0)
+                .landLongitude(0.0)
+                .build();
+        landmarkRepository.save(landmark);
+
+        byte[] content1 = "test file content".getBytes();
+        byte[] content2 = "test file content".getBytes();
+        MockMultipartFile mockMultipartFile1 = new MockMultipartFile("file", "test.jpeg", "image/jpeg", content1);
+        MockMultipartFile mockMultipartFile2 = new MockMultipartFile("file", "test.jpeg", "image/jpeg", content2);
+
+        Long photo4cutID1 = photo4cutController.uploadFile(mockMultipartFile1,landmark.getLandmarkId(), token);
+        Long photo4cutID2 = photo4cutController.uploadFile(mockMultipartFile2,landmark.getLandmarkId(), token);
+
+        List<Collections> collections = photo4cutController.MyMemory4Cut(token);
+        assertEquals(2, collections.size());
     }
 
 }
