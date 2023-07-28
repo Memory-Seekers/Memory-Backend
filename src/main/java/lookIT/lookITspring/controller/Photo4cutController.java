@@ -43,30 +43,37 @@ public class Photo4cutController {
         @RequestParam("file") MultipartFile file,
         @RequestParam("landmarkId") Long landmarkId,
         @RequestHeader("token") String token
-    ) throws IOException {
-        Long userId = jwtProvider.getUserId(token);
+    ) throws Exception {
+        try{
+            Long userId = jwtProvider.getUserId(token);
 
-        String fileName = file.getOriginalFilename();
-        String folderName = "photo4cut/photo";
-        LocalDateTime now = LocalDateTime.now();
-        String nowTime = now.toString();
+            String fileName = file.getOriginalFilename();
+            String folderName = "photo4cut/photo";
+            LocalDateTime now = LocalDateTime.now();
+            String nowTime = now.toString();
 
-        String key = folderName + "/" + fileName + nowTime;
-        ObjectMetadata metadata = new ObjectMetadata();
-        metadata.setContentType(file.getContentType());
+            String key = folderName + "/" + fileName + nowTime;
+            ObjectMetadata metadata = new ObjectMetadata();
+            metadata.setContentType(file.getContentType());
 
-        PutObjectRequest request = new PutObjectRequest(bucket, key, file.getInputStream(),
-            metadata);
-        request.setCannedAcl(CannedAccessControlList.PublicRead);
-        s3Client.putObject(request);
+            PutObjectRequest request = new PutObjectRequest(bucket, key, file.getInputStream(),
+                    metadata);
+            request.setCannedAcl(CannedAccessControlList.PublicRead);
+            s3Client.putObject(request);
 
-        String imageUrl = s3Client.getUrl(bucket, key).toString();
-        if (imageUrl == null) {
-            System.out.println("S3 Err - s3Client is null");
-            throw new Error("S3 Err - s3Client is null");
-        } else {
-            return photo4CutService.savePhoto4Cut(landmarkId, userId, imageUrl, key);
+            String imageUrl = s3Client.getUrl(bucket, key).toString();
+            if (imageUrl == null) {
+                System.out.println("S3 Err - s3Client is null");
+                throw new Error("S3 Err - s3Client is null");
+            } else {
+                return photo4CutService.savePhoto4Cut(landmarkId, userId, imageUrl, key);
+            }
+        }catch (Exception e){
+            System.out.println(e);
+            throw e;
+            //throw new Error("JWT Err");
         }
+
 
     }
 
@@ -95,7 +102,7 @@ public class Photo4cutController {
     }
 
     @DeleteMapping("/4CutPhotoDelete")
-    public boolean deleteTag(@RequestParam Long photo4CutId) {
+    public boolean deleteTag(@RequestParam Long photo4CutId) throws Exception {
         return photo4CutService.Photo4CutDelete(photo4CutId);
     }
 }

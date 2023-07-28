@@ -54,7 +54,6 @@ import static org.testng.AssertJUnit.assertNotNull;
 @SpringBootTest
 @Transactional
 @ExtendWith(SpringExtension.class)
-@ActiveProfiles("test")
 class MemorySpotControllerTest {
     @Autowired
     private MemorySpotService memorySpotService;

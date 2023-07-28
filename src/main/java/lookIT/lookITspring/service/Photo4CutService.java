@@ -36,18 +36,15 @@ public class Photo4CutService {
     private AmazonS3 s3Client;
 
     public String getPhotoFrame(long landmarkId) throws Exception {
-        try {
-            Optional<Landmark> landmark = landmarkRepository.findById(landmarkId);
-            String frameUrl = landmark.orElseThrow(
-                    () -> new Exception("No landmark found for the given landmarkId."))
+        String frameUrl = landmarkRepository.findById(landmarkId)
+                .orElseThrow(() -> new Exception("No landmark found for the given landmarkId."))
                 .getFrameUrl();
-            if (frameUrl == null) {
-                throw new Exception("No landmarkFrame for the given landmark.");
-            }
-            return frameUrl;
-        } catch (Exception e) {
-            throw new Exception("Failed to get photo frame for the given landmarkId.", e);
+
+        if (frameUrl == null) {
+            throw new Exception("No landmarkFrame for the given landmark.");
         }
+
+        return frameUrl;
     }
 
     public Long savePhoto4Cut(Long landmarkId, Long userId, String imageUrl, String key) {
@@ -125,21 +122,21 @@ public class Photo4CutService {
         return friendList;
     }
 
-    private void deletePhotoFromS3(String key) {
+    private void deletePhotoFromS3(String key) throws Exception {
         try {
             boolean isS3Object = s3Client.doesObjectExist(bucket, key);
             if (isS3Object) {
                 s3Client.deleteObject(bucket, key);
-            } else {
+            } /*else {
                 throw new Exception("S3 object does not exist for the given key.");
-            }
+            }*/
         } catch (Exception e) {
-            throw new RuntimeException("Failed - Delete S3 file", e);
+            throw new Exception("Failed - Delete S3 file", e);
         }
     }
 
-    public boolean Photo4CutDelete(Long photo4CutId) {
-        try {
+    public boolean Photo4CutDelete(Long photo4CutId) throws Exception{
+
             Optional<Collections> collectionOptional = collectionsRepository.findById(photo4CutId);
             Collections collection = collectionOptional.orElseThrow(
                 () -> new Exception("No collection found for the given photo4CutId."));
@@ -149,10 +146,6 @@ public class Photo4CutService {
             String photo4CutKey = collection.getPhoto4CutKey();
             deletePhotoFromS3(photo4CutKey);
             collectionsRepository.delete(collection);
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
 
         return true;
     }
