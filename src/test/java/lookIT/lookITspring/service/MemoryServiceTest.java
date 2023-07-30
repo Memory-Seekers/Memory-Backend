@@ -30,12 +30,23 @@ import org.springframework.test.util.AssertionErrors;
 @Transactional
 public class MemoryServiceTest {
 
-	@Autowired MemoryService memoryService;
-	@Autowired MemoryRepository memoryRepository;
-	@Autowired UserService userService;
-	@Autowired UserRepository userRepository;
-	@Autowired LinePathRepository linePathRepository;
-	@Autowired InfoTagsRepository infoTagsRepository;
+	@Autowired
+	private MemoryService memoryService;
+
+	@Autowired 
+	private MemoryRepository memoryRepository;
+
+	@Autowired
+    private UserService userService;
+
+	@Autowired
+    private UserRepository userRepository;
+
+	@Autowired
+    private LinePathRepository linePathRepository;
+
+	@Autowired
+    private InfoTagsRepository infoTagsRepository;
 
 	private Long memoryId;
 	private String token;
@@ -290,6 +301,30 @@ public class MemoryServiceTest {
 
 		//Then
 		AssertionErrors.assertEquals("Assertion failed: Memory list not 0", 2, expected_size);
+	}
+
+    @Test
+    @DisplayName("정보태그 검색")
+	public void 정보태그_검색(){
+		//Given
+		HashMap<String, String> map1 = new HashMap<>();
+		map1.put("info", "xxyyzz");
+		HashMap<String, String> map2 = new HashMap<>();
+		map2.put("info", "for_searching_info_tag");
+		List<Map<String, String>> request = new ArrayList<>();
+
+		request.add(map1);
+		request.add(map2);
+
+		memoryService.createInfoTags(memoryId, request);
+
+		//When
+		MemoryListDto memory = memoryService.searchMemoryByInfoTags(token, "for_searching_info_tag").get(0);
+
+		//Then
+		assert memory.getInfo().contains("for_searching_info_tag");
+		assert memory.getInfo().contains("xxyyzz");
+		AssertionErrors.assertEquals("Assertion failed: Memory info tag size is not 2", 2, memory.getInfo().size());
 	}
 
 }
