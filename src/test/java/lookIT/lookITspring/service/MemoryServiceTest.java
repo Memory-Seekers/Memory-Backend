@@ -1,6 +1,7 @@
 package lookIT.lookITspring.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -11,10 +12,12 @@ import lookIT.lookITspring.dto.LinePathDto;
 import lookIT.lookITspring.dto.MemoryCreateRequestDto;
 import lookIT.lookITspring.dto.MemoryListDto;
 import lookIT.lookITspring.dto.UserJoinRequestDto;
+import lookIT.lookITspring.entity.FriendTags;
 import lookIT.lookITspring.entity.InfoTags;
 import lookIT.lookITspring.entity.LinePath;
 import lookIT.lookITspring.entity.Memory;
 import lookIT.lookITspring.entity.User;
+import lookIT.lookITspring.repository.FriendTagsRepository;
 import lookIT.lookITspring.repository.InfoTagsRepository;
 import lookIT.lookITspring.repository.LinePathRepository;
 import lookIT.lookITspring.repository.MemoryRepository;
@@ -47,6 +50,9 @@ public class MemoryServiceTest {
 
 	@Autowired
     private InfoTagsRepository infoTagsRepository;
+
+	@Autowired
+	private FriendTagsRepository friendTagsRepository;
 
 	private Long memoryId;
 	private String token;
@@ -305,7 +311,7 @@ public class MemoryServiceTest {
 
     @Test
     @DisplayName("정보태그 검색")
-	public void 정보태그_검색(){
+	public void 정보태그_검색() throws Exception{
 		//Given
 		HashMap<String, String> map1 = new HashMap<>();
 		map1.put("info", "xxyyzz");
@@ -325,6 +331,39 @@ public class MemoryServiceTest {
 		assert memory.getInfo().contains("for_searching_info_tag");
 		assert memory.getInfo().contains("xxyyzz");
 		AssertionErrors.assertEquals("Assertion failed: Memory info tag size is not 2", 2, memory.getInfo().size());
+	}
+
+	@Test
+	@DisplayName("친구태그 생성")
+	public void 친구태그_생성() throws Exception{
+		//Given
+		String tagId1 ="testFriend1";
+		String email1 ="testFriend1@gmail.com";
+		String password1 ="memoryRecord123!";
+		String nickName1 ="testFriend1";
+		UserJoinRequestDto userDto1 = new UserJoinRequestDto(tagId1, email1, password1, nickName1);
+		userService.join(userDto1);
+
+		String tagId2 ="testFriend2";
+		String email2 ="testFriend2@gmail.com";
+		String password2 ="memoryRecord123!";
+		String nickName2 ="testFriend2";
+		UserJoinRequestDto userDto2 = new UserJoinRequestDto(tagId2, email2, password2, nickName2);
+		userService.join(userDto2);
+
+		String[] friendsList= {"testFriend1", "testFriend2"};
+
+		//When
+		memoryService.memoryFriendTag(friendsList, memoryId);
+
+		//Then
+		Memory taggedMemory = memoryRepository.findById(memoryId).get();
+		List<FriendTags> friendTags = friendTagsRepository.findByFriendTagsId_Memory(taggedMemory);
+
+		assertNotNull(friendTags);
+		AssertionErrors.assertEquals("Assertion failed: Number of tagged friends is not 2", 2, friendTags.size());
+		assert(friendTags.contains("testFriend1"));
+		assert(friendTags.contains("testFriend2"));
 	}
 
 }
