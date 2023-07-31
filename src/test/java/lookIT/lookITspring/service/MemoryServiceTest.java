@@ -170,7 +170,7 @@ public class MemoryServiceTest {
 
 	@Test
 	@DisplayName("Id로 추억일지 리스트 조회 - 0개")
-	public void	Id로_추억일지_리스트_조회_0개() throws Exception{
+	public void Id로_추억일지_리스트_조회_0개() throws Exception{
 		//Given
 		String tagId1 ="testFriend1";
 		String email1 ="testFriend1@gmail.com";
@@ -193,7 +193,7 @@ public class MemoryServiceTest {
 
 	@Test
 	@DisplayName("Id로 추억일지 리스트 조회 - 1개")
-	public void	Id로_추억일지_리스트_조회_1개() throws Exception{
+	public void Id로_추억일지_리스트_조회_1개() throws Exception{
 		//Given
 		//When
 		Integer expected_size = memoryService.memoryListInquiry(token).size();
@@ -204,7 +204,7 @@ public class MemoryServiceTest {
 
 	@Test
 	@DisplayName("Id로 추억일지 리스트 조회 - 여러개")
-	public void	Id로_추억일지_리스트_조회_여러개() throws Exception{
+	public void Id로_추억일지_리스트_조회_여러개() throws Exception{
 		//Given
 		ArrayList<LinePathDto> pathList = new ArrayList<>();
 		LinePathDto path1 = new LinePathDto(10.21564, 11.0216588);
@@ -223,7 +223,7 @@ public class MemoryServiceTest {
 
 	@Test
 	@DisplayName("친구 추억일지 리스트 조회 - 0개")
-	public void	친구_추억일지_리스트_조회_0개() throws Exception{
+	public void 친구_추억일지_리스트_조회_0개() throws Exception{
 		//Given
 		String tagId1 ="testFriend1";
 		String email1 ="testFriend1@gmail.com";
@@ -241,7 +241,7 @@ public class MemoryServiceTest {
 
 	@Test
 	@DisplayName("친구 추억일지 리스트 조회 - 1개")
-	public void	친구_추억일지_리스트_조회_1개() throws Exception{
+	public void 친구_추억일지_리스트_조회_1개() throws Exception{
 		//Given
 		String tagId1 ="testFriend1";
 		String email1 ="testFriend1@gmail.com";
@@ -272,7 +272,7 @@ public class MemoryServiceTest {
 
 	@Test
 	@DisplayName("친구 추억일지 리스트 조회 - 여러개")
-	public void	친구_추억일지_리스트_조회_여러개() throws Exception{
+	public void 친구_추억일지_리스트_조회_여러개() throws Exception{
 		//Given
 		String tagId1 ="testFriend1";
 		String email1 ="testFriend1@gmail.com";
