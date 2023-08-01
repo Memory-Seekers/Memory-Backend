@@ -200,6 +200,11 @@ class Photo4cutControllerTest {
 
         List<Collections> collections = photo4CutService.getCollectionsByTagId(tagId2);
         assertEquals(1,collections.size());
+
+        Collections collection = collections.get(0);
+        assertEquals(photo4cutID, collection.getPhoto4CutId());
+        assertEquals(landmark.getLandmarkId(),collection.getLandmark().getLandmarkId());
+        assertEquals("user1@gmail.com",collection.getUser().getEmail());
     }
 
 }
