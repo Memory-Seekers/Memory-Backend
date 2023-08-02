@@ -12,7 +12,6 @@ import lookIT.lookITspring.security.JwtProvider;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @RequiredArgsConstructor
 @Transactional
@@ -24,8 +23,7 @@ public class UserService {
     private final RedisTemplate redisTemplate;
     private final EmailService emailService;
 
-    @Transactional
-    public boolean join(UserJoinRequestDto requestDto) throws Exception {
+    public boolean join(UserJoinRequestDto requestDto) {
 
         if (userRepository.findByEmail(requestDto.getEmail()).isPresent()) {
             throw new IllegalStateException("이미 존재하는 이메일입니다.");
@@ -50,33 +48,28 @@ public class UserService {
 
     public boolean checkIdDuplicate(String tagId) {
         Optional<User> optionalMember = userRepository.findByTagId(tagId);
-        try {
-            User user = optionalMember.get();
-            return false;
-        } catch (Exception e) {
+        if (optionalMember.isEmpty())
             return true;
-        }
+        else
+            return false;
     }
 
     public boolean logout(String token) {
         Long expiration = jwtProvider.getExpiration(token);
 
-        redisTemplate.opsForValue()
-            .set(token, "logout", expiration, TimeUnit.MILLISECONDS);
+        redisTemplate.opsForValue().set(token, "logout", expiration, TimeUnit.MILLISECONDS);
         return true;
     }
 
     public String emailConfirm(String email) throws Exception{
-            User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalStateException("해당 이메일로 가입된 유저가 없습니다."));;
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new IllegalStateException("해당 이메일로 가입된 유저가 없습니다."));;
 
-        String confirm = emailService.sendSimpleMessage(email);
-        return confirm;
+        return emailService.sendSimpleMessage(email);
     }
 
     public String emailConfirmJoin(String email) throws Exception {
-        String confirm = emailService.sendSimpleMessage2(email);
-        return confirm;
+        return emailService.sendSimpleMessage2(email);
     }
 
     public boolean regeneratePassword(Map<String, String> request) {

@@ -106,7 +106,7 @@ public class Photo4CutService {
         photoTagsRepository.deleteAll(photoTags);
     }
 
-    public List<Map<String, String>> getTaggedFriendListByPhoto4CutIdId(Long photo4CutId) {
+    public List<Map<String, String>> getTaggedFriendListByPhoto4CutId(Long photo4CutId) {
         Collections collections = collectionsRepository.findById(photo4CutId).get();
         List<PhotoTags> photoTags = photoTagsRepository.findByCollectionsPhoto4CutId(photo4CutId);
         List<Map<String, String>> friendList = new ArrayList<>();
