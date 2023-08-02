@@ -9,6 +9,7 @@ import lookIT.lookITspring.entity.Landmark;
 import lookIT.lookITspring.repository.CollectionsRepository;
 import lookIT.lookITspring.repository.LandmarkRepository;
 import lookIT.lookITspring.service.MemoryService;
+import lookIT.lookITspring.service.Photo4CutService;
 import lookIT.lookITspring.service.UserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -43,6 +44,8 @@ class Photo4cutControllerTest {
     private Photo4cutController photo4cutController;
     @Autowired
     private CollectionsRepository collectionsRepository;
+    @Autowired
+    private Photo4CutService photo4CutService;
     @Value("${cloud.aws.s3.bucket}")
     private String bucket;
     @Autowired
@@ -167,6 +170,41 @@ class Photo4cutControllerTest {
 
         List<Collections> collections = photo4cutController.MyMemory4Cut(token);
         assertEquals(2, collections.size());
+    }
+
+    @Test
+    @DisplayName("태그된 추억네컷 리스트 조회")
+    public void getCollectionsByTagIdTestSuccess() throws Exception{
+
+        String tagId2 = "userTagId2";
+        String email2 = "user2@gmail.com";
+        String password2 = "memoryRecord123!";
+        String nickName2 = "userName2";
+        UserJoinRequestDto user2 = new UserJoinRequestDto(tagId2, email2, password2, nickName2);
+        userService.join(user2);
+
+        Landmark landmark = Landmark.builder()
+                .landmarkName("Test Landmark")
+                .landLatitude(0.0)
+                .landLongitude(0.0)
+                .build();
+        landmarkRepository.save(landmark);
+
+        byte[] content = "test file content".getBytes();
+        MockMultipartFile mockMultipartFile = new MockMultipartFile("file", "test.jpeg", "image/jpeg", content);
+
+        Long photo4cutID = photo4cutController.uploadFile(mockMultipartFile,landmark.getLandmarkId(), token);
+
+        String[] friendList = new String[]{tagId2};
+        photo4CutService.collectionFriendTag(friendList,photo4cutID);
+
+        List<Collections> collections = photo4CutService.getCollectionsByTagId(tagId2);
+        assertEquals(1,collections.size());
+
+        Collections collection = collections.get(0);
+        assertEquals(photo4cutID, collection.getPhoto4CutId());
+        assertEquals(landmark.getLandmarkId(),collection.getLandmark().getLandmarkId());
+        assertEquals("user1@gmail.com",collection.getUser().getEmail());
     }
 
 }

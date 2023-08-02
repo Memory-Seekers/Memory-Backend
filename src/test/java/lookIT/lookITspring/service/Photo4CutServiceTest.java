@@ -1,5 +1,8 @@
 package lookIT.lookITspring.service;
 
+import lookIT.lookITspring.dto.LinePathDto;
+import lookIT.lookITspring.dto.MemoryCreateRequestDto;
+import lookIT.lookITspring.dto.UserJoinRequestDto;
 import lookIT.lookITspring.entity.Collections;
 import lookIT.lookITspring.entity.Landmark;
 import lookIT.lookITspring.entity.User;
@@ -17,6 +20,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
