@@ -94,7 +94,6 @@ public class SpringConfig {
         this.collectionsRepository = collectionsRepository;
     }
 
-    // lettuce
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
         return new LettuceConnectionFactory(redis_host, redis_port);
