@@ -31,7 +31,7 @@ public class MemoryController {
     }
 
     @GetMapping("/info")
-    public List<MemoryListDto> searchMemoryByInfoTags(@RequestHeader("token") String token,
+    public List<MemoryListDto> getMemoryByInfoTags(@RequestHeader("token") String token,
         @RequestParam String info) {
         return memoryService.searchMemoryByInfoTags(token, info);
     }
@@ -43,25 +43,25 @@ public class MemoryController {
 
     @GetMapping("/list")
     @ResponseBody
-    public List<MemoryListDto> getMemoryListById(@RequestHeader("token") String token) {
-        return memoryService.memoryListInquiry(token);
+    public List<MemoryListDto> getMemoryList(@RequestHeader("token") String token) {
+        return memoryService.memoryListByToken(token);
     }
 
     @GetMapping("/friendList")
     @ResponseBody
-    public List<MemoryListDto> getMemoryListByTagId(@RequestParam String tagId) {
-        return memoryService.friendMemoryListInquiry(tagId);
+    public List<MemoryListDto> getFriendMemoryList(@RequestParam String tagId) {
+        return memoryService.friendMemoryListByTagId(tagId);
     }
 
     @PostMapping("/friendTag")
     public String postMemoryFriendTag(@RequestBody String[] friendsList,
         @RequestParam Long memoryId) {
-        return memoryService.memoryFriendTag(friendsList, memoryId);
+        return memoryService.tagFriendToMemory(friendsList, memoryId);
     }
 
     @GetMapping("/taggedFriendList")
     @ResponseBody
-    public List<Map<String, String>> getTaggedFriendListByMemoryId(@RequestParam Long memoryId) {
+    public List<Map<String, String>> TaggedFriendList(@RequestParam Long memoryId) {
         return memoryService.getTaggedFriendListByMemoryId(memoryId);
     }
 
