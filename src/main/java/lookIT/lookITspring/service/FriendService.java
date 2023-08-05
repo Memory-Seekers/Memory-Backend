@@ -21,11 +21,11 @@ public class FriendService {
     private final FriendsRepository friendsRepository;
     private final JwtProvider jwtProvider;
 
-    public List<FriendListDto> friendInfoIncludingTagId(String tagId, String token) {
+    public List<FriendListDto> getFriendInfoIncludingTagId(String tagId, String token) {
         Long userId = jwtProvider.getUserId(token);
         User user = userRepository.findById(userId).get();
         List<FriendListDto> myFriendList = getMyfriendList(token);
-        List<FriendListDto> myRequestList = myRequestList(token);
+        List<FriendListDto> myRequestList = getMyRequestList(token);
 
         List<User> friends = userRepository.findAll();
         List<FriendListDto> friendIncludingTagId = new ArrayList<>();
@@ -48,7 +48,7 @@ public class FriendService {
         return filterFriendIncludingTagId;
     }
 
-    public FriendListDto myInfo(String token) {
+    public FriendListDto getMyInfo(String token) {
         Long userId = jwtProvider.getUserId(token);
         User user = userRepository.findById(userId).get();
         FriendListDto myInformation = new FriendListDto(
@@ -58,7 +58,7 @@ public class FriendService {
         return myInformation;
     }
 
-    public boolean friendRequest(String tagId, String token) {
+    public boolean sendFriendRequest(String tagId, String token) {
         Long userId = jwtProvider.getUserId(token);
         User friend = userRepository.findByTagId(tagId).get();
         User user = userRepository.findById(userId).get();
@@ -67,7 +67,7 @@ public class FriendService {
         return true;
     }
 
-    public boolean myRequestCancel(String tagId, String token) {
+    public boolean cancelMyRequest(String tagId, String token) {
         Long userId = jwtProvider.getUserId(token);
         User friend = userRepository.findByTagId(tagId).get();
         User user = userRepository.findById(userId).get();
@@ -95,7 +95,7 @@ public class FriendService {
         return recievedRequestList;
     }
 
-    public boolean friendAccept(String tagId, String token) {
+    public boolean acceptFriendRequest(String tagId, String token) {
         Long userId = jwtProvider.getUserId(token);
         User user = userRepository.findByTagId(tagId).get();
         User friend = userRepository.findById(userId).get();
@@ -112,7 +112,7 @@ public class FriendService {
         }
     }
 
-    public boolean friendReject(String tagId, String token) {
+    public boolean rejectFriendRequest(String tagId, String token) {
         Long userId = jwtProvider.getUserId(token);
         User user = userRepository.findByTagId(tagId).get();
         User friend = userRepository.findById(userId).get();
@@ -142,7 +142,7 @@ public class FriendService {
         return friendList;
     }
 
-    public List<FriendListDto> myRequestList(String token) {
+    public List<FriendListDto> getMyRequestList(String token) {
         return getFriendListByStatus(token, "R");
     }
 
