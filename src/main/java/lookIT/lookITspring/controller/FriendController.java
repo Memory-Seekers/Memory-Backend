@@ -65,7 +65,7 @@ public class FriendController {
 
     @GetMapping("/accept")
     public List<FriendListDto> getFriendRequest(@RequestHeader("token") String token) {
-        return friendService.friendsRequestList(token);
+        return friendService.recievedRequestList(token);
     }
 
     @GetMapping("/list")
