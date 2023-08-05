@@ -20,28 +20,30 @@ public class LandmarkService {
 
     public List<AllLandmarkDto> allLandmarkInfo() {
         List<Object[]> landmarks = landmarkRepository.findAllLandmarks();
-        List<AllLandmarkDto> result = new ArrayList<>();
+        List<AllLandmarkDto> allLandmarkList = new ArrayList<>();
         for (Object[] landmark : landmarks) {
-            AllLandmarkDto alllandmarkDto = new AllLandmarkDto((Long) landmark[0],
-                (Double) landmark[1], (Double) landmark[2]);
-            result.add(alllandmarkDto);
+            AllLandmarkDto alllandmarkDto = new AllLandmarkDto(
+                (Long) landmark[0],
+                (Double) landmark[1],
+                (Double) landmark[2]);
+            allLandmarkList.add(alllandmarkDto);
         }
-        return result;
+        return allLandmarkList;
     }
 
     public ResponseEntity<LandmarkInfoDto> landmarkInfoWithLandmarkId(
         @RequestParam Long landmarkId) {
         Optional<Landmark> landmark = landmarkRepository.findById(landmarkId);
-        if (landmark.isPresent()) {
-            LandmarkInfoDto landmarkInfo = new LandmarkInfoDto(
-                landmark.get().getLandmarkName(),
-                landmark.get().getLandInfo(),
-                landmark.get().getFrameUrl(),
-                landmark.get().getLandmarkAddress());
-            return ResponseEntity.ok(landmarkInfo);
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+            if (landmark.isPresent()) {
+                LandmarkInfoDto landmarkInfo = new LandmarkInfoDto(
+                    landmark.get().getLandmarkName(),
+                    landmark.get().getLandInfo(),
+                    landmark.get().getFrameUrl(),
+                    landmark.get().getLandmarkAddress());
+                return ResponseEntity.ok(landmarkInfo);
+            } else {
+                return ResponseEntity.notFound().build();
+            }
     }
 
 }
