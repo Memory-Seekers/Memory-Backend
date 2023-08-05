@@ -77,7 +77,7 @@ public class MemoryService {
         }
     }
 
-    public List<MemoryListDto> memoryListByToken(String token) {
+    public List<MemoryListDto> getMemoryListByToken(String token) {
         Long userId = jwtProvider.getUserId(token);
         List<Memory> memories = memoryRepository.findByUser_UserId(userId);
         List<MemoryListDto> myMemoryList = new ArrayList<>();
@@ -90,7 +90,7 @@ public class MemoryService {
         return myMemoryList;
     }
 
-    public List<MemoryListDto> friendMemoryListByTagId(String tagId) {
+    public List<MemoryListDto> getFriendMemoryListByTagId(String tagId) {
         List<Memory> memories = memoryRepository.findByUser_tagId(tagId);
         List<MemoryListDto> friendMemoryList = new ArrayList<>();
         for (Memory memory : memories) {

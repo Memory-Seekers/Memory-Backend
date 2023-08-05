@@ -44,13 +44,13 @@ public class MemoryController {
     @GetMapping("/list")
     @ResponseBody
     public List<MemoryListDto> getMemoryList(@RequestHeader("token") String token) {
-        return memoryService.memoryListByToken(token);
+        return memoryService.getMemoryListByToken(token);
     }
 
     @GetMapping("/friendList")
     @ResponseBody
     public List<MemoryListDto> getFriendMemoryList(@RequestParam String tagId) {
-        return memoryService.friendMemoryListByTagId(tagId);
+        return memoryService.getFriendMemoryListByTagId(tagId);
     }
 
     @PostMapping("/friendTag")
@@ -61,7 +61,7 @@ public class MemoryController {
 
     @GetMapping("/taggedFriendList")
     @ResponseBody
-    public List<Map<String, String>> TaggedFriendList(@RequestParam Long memoryId) {
+    public List<Map<String, String>> getTaggedFriendList(@RequestParam Long memoryId) {
         return memoryService.getTaggedFriendListByMemoryId(memoryId);
     }
 
