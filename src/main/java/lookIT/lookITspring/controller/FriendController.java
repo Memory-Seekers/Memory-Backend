@@ -24,52 +24,51 @@ public class FriendController {
     @GetMapping
     public List<FriendListDto> getUserByTagId(@RequestParam String tagId,
         @RequestHeader("token") String token) {
-        return friendService.friendInfoIncludingTagId(tagId, token);
+        return friendService.getFriendInfoIncludingTagId(tagId, token);
     }
 
     @GetMapping("/my")
     public FriendListDto getMyInfo(@RequestHeader("token") String token) {
-        return friendService.myInfo(token);
+        return friendService.getMyInfo(token);
     }
 
     @PostMapping("/request")
     @ResponseStatus(HttpStatus.OK)
-    public boolean friendRequest(@RequestParam String tagId, @RequestHeader("token") String token)
-        throws Exception {
-        return friendService.friendRequest(tagId, token);
+    public boolean sendFriendRequest(@RequestParam String tagId, @RequestHeader("token") String token) throws Exception {
+        return friendService.sendFriendRequest(tagId, token);
     }
 
     @PostMapping("/accept")
     @ResponseStatus(HttpStatus.OK)
-    public boolean friendAccept(@RequestParam String tagId, @RequestHeader("token") String token)
+    public boolean acceptFriendRequest(@RequestParam String tagId, @RequestHeader("token") String token)
         throws Exception {
-        return friendService.friendAccept(tagId, token);
+        return friendService.acceptFriendRequest(tagId, token);
     }
 
     @DeleteMapping("/reject")
-    public boolean friendReject(@RequestParam String tagId, @RequestHeader("token") String token)
+    public boolean rejectFriendRequest(@RequestParam String tagId, @RequestHeader("token") String token)
         throws Exception {
-        return friendService.friendReject(tagId, token);
+        return friendService.rejectFriendRequest(tagId, token);
     }
 
     @GetMapping("/request")
     public List<FriendListDto> getMyRequest(@RequestHeader("token") String token) {
-        return friendService.myRequestList(token);
+        return friendService.getMyRequestList(token);
     }
 
     @DeleteMapping("/request")
-    public boolean friendRequestCancel(@RequestParam String tagId,
+    public boolean cancelFriendRequest(@RequestParam String tagId,
         @RequestHeader("token") String token) {
-        return friendService.myRequestCancel(tagId, token);
+        return friendService.cancelMyRequest(tagId, token);
     }
 
     @GetMapping("/accept")
     public List<FriendListDto> getFriendRequest(@RequestHeader("token") String token) {
-        return friendService.friendsRequestList(token);
+        return friendService.recievedRequestList(token);
     }
 
     @GetMapping("/list")
-    public List<FriendListDto> myFriendList(@RequestHeader("token") String token) {
+    public List<FriendListDto> getMyFriendList(@RequestHeader("token") String token) {
         return friendService.getMyfriendList(token);
     }
 
