@@ -45,35 +45,6 @@ public class FriendService {
             .map(friend -> new FriendListDto(friend.getTagId(), friend.getNickName()))
             .collect(Collectors.toList());
 
-
-//        for (User friend : friends) {
-//            if (friend.getTagId().contains(tagId) && !friend.getTagId().equals(user.getTagId())) {
-//                boolean isMyFriend = false;
-//                boolean isMyRequest = false;
-//
-//                for (FriendListDto myFriend : myFriendList) {
-//                    if (myFriend.getTagId().equals(friend.getTagId())) {
-//                        isMyFriend = true;
-//                        break;
-//                    }
-//                }
-//
-//                for (FriendListDto myRequest : myRequestList) {
-//                    if (myRequest.getTagId().equals(friend.getTagId())) {
-//                        isMyRequest = true;
-//                        break;
-//                    }
-//                }
-//
-//                if (!isMyFriend && !isMyRequest) {
-//                    FriendListDto friendListDto = new FriendListDto(
-//                        friend.getTagId(),
-//                        friend.getNickName());
-//                    friendIncludingTagId.add(friendListDto);
-//                }
-//            }
-//        }
-
         return filterFriendIncludingTagId;
     }
 
