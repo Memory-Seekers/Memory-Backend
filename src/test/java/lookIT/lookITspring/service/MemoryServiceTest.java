@@ -185,7 +185,7 @@ public class MemoryServiceTest {
 		String token1 = userService.login(user2);
 
 		//When
-		Integer expected_size = memoryService.memoryListByToken(token1).size();
+		Integer expected_size = memoryService.getMemoryListByToken(token1).size();
 
 		//Then
 		AssertionErrors.assertEquals("Assertion failed: Memory list not 0", 0, expected_size);
@@ -196,7 +196,7 @@ public class MemoryServiceTest {
 	public void Id로_추억일지_리스트_조회_1개() throws Exception{
 		//Given
 		//When
-		Integer expected_size = memoryService.memoryListByToken(token).size();
+		Integer expected_size = memoryService.getMemoryListByToken(token).size();
 
 		//Then
 		AssertionErrors.assertEquals("Assertion failed: Memory list not 0", 1, expected_size);
@@ -215,7 +215,7 @@ public class MemoryServiceTest {
 		memoryService.memoryCreate(token, requestDto);
 
 		//When
-		Integer expected_size = memoryService.memoryListByToken(token).size();
+		Integer expected_size = memoryService.getMemoryListByToken(token).size();
 
 		//Then
 		AssertionErrors.assertEquals("Assertion failed: Memory list not 0", 2, expected_size);
@@ -233,7 +233,7 @@ public class MemoryServiceTest {
 		userService.join(userDto1);
 
 		//When
-		Integer expected_size = memoryService.friendMemoryListByTagId(tagId1).size();
+		Integer expected_size = memoryService.getFriendMemoryListByTagId(tagId1).size();
 
 		//Then
 		AssertionErrors.assertEquals("Assertion failed: Memory list not 0", 0, expected_size);
@@ -264,7 +264,7 @@ public class MemoryServiceTest {
 		memoryService.memoryCreate(token1, requestDto);
 
 		//When
-		Integer expected_size = memoryService.friendMemoryListByTagId(tagId1).size();
+		Integer expected_size = memoryService.getFriendMemoryListByTagId(tagId1).size();
 
 		//Then
 		AssertionErrors.assertEquals("Assertion failed: Memory list not 0", 1, expected_size);
@@ -303,7 +303,7 @@ public class MemoryServiceTest {
 		memoryService.memoryCreate(token1, requestDto2);
 
 		//When
-		Integer expected_size = memoryService.friendMemoryListByTagId(tagId1).size();
+		Integer expected_size = memoryService.getFriendMemoryListByTagId(tagId1).size();
 
 		//Then
 		AssertionErrors.assertEquals("Assertion failed: Memory list not 0", 2, expected_size);
