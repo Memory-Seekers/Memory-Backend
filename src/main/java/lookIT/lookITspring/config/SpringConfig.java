@@ -97,7 +97,6 @@ public class SpringConfig implements WebMvcConfigurer {
         this.collectionsRepository = collectionsRepository;
     }
 
-    // lettuce
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
         return new LettuceConnectionFactory(redis_host, redis_port);
