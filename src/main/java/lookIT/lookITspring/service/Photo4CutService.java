@@ -135,7 +135,7 @@ public class Photo4CutService {
         }
     }
 
-    public boolean Photo4CutDelete(Long photo4CutId) throws Exception{
+    public boolean deletePhoto4Cut(Long photo4CutId) throws Exception{
 
             Optional<Collections> collectionOptional = collectionsRepository.findById(photo4CutId);
             Collections collection = collectionOptional.orElseThrow(

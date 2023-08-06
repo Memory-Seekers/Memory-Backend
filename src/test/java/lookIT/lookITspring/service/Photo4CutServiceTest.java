@@ -1,33 +1,16 @@
 package lookIT.lookITspring.service;
 
-import lookIT.lookITspring.dto.LinePathDto;
-import lookIT.lookITspring.dto.MemoryCreateRequestDto;
-import lookIT.lookITspring.dto.UserJoinRequestDto;
-import lookIT.lookITspring.entity.Collections;
+
 import lookIT.lookITspring.entity.Landmark;
-import lookIT.lookITspring.entity.User;
-import lookIT.lookITspring.repository.CollectionsRepository;
 import lookIT.lookITspring.repository.LandmarkRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
 import javax.transaction.Transactional;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.fail;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 import static org.testng.AssertJUnit.assertEquals;
 
 @SpringBootTest
@@ -90,7 +73,7 @@ public class Photo4CutServiceTest {
     public void Photo4CutDeleteTestFail_NonExistCollection() {
         try{
             Long photo4cutId = 5000L;
-            photo4CutService.Photo4CutDelete(photo4cutId);
+            photo4CutService.deletePhoto4Cut(photo4cutId);
             fail("Expected Exception to be thrown, but it was not thrown.");
         }catch(Exception e){
             assertEquals("No collection found for the given photo4CutId.", e.getMessage());

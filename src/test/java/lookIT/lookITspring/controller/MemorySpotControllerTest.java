@@ -16,38 +16,20 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.testng.AssertJUnit;
-
-import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertNotNull;
 
@@ -106,7 +88,13 @@ class MemorySpotControllerTest {
         byte[] content = "test file content".getBytes();
         MockMultipartFile mockMultipartFile = new MockMultipartFile("file", "test.jpeg", "image/jpeg", content);
 
-        boolean result = memorySpotController.uploadFile(mockMultipartFile, spotLatitude, spotLongitude, memoryID);
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        String imageUrl = "https://example.com/imageUrl";
+        String s3Key = "memoryphoto/test.jpeg";
+        request.setAttribute("imageUrl", imageUrl);
+        request.setAttribute("s3Key", s3Key);
+
+        boolean result = memorySpotController.uploadFile(mockMultipartFile, spotLatitude, spotLongitude, memoryID, request);
 
         assertEquals(true, result);
 
@@ -135,31 +123,39 @@ class MemorySpotControllerTest {
     }
 
     @Test
-    @DisplayName("추억일지 스팟 사진 매칭 실패 - Invalid memoryID")
+    @DisplayName("추억일지 스팟 사진 매칭 실패 - S3 Err")
     public void uploadFileTestFail_InvalidMemoryID() throws Exception{
         Double spotLatitude = 1.1;
         Double spotLongitude = 1.2;
-        Long memoryId = 5000L;
         byte[] content = "test file content".getBytes();
         MockMultipartFile mockMultipartFile = new MockMultipartFile("file", "test.jpeg", "image/jpeg", content);
 
+        MockHttpServletRequest request = new MockHttpServletRequest();
+
         try {
-            memorySpotController.uploadFile(mockMultipartFile, spotLatitude, spotLongitude, memoryId);
+            memorySpotController.uploadFile(mockMultipartFile, spotLatitude, spotLongitude, memoryID, request);
             fail("Expected IllegalArgumentException to be thrown, but it was not thrown.");
-        } catch (IllegalArgumentException e) {
-            AssertJUnit.assertEquals("Invalid memoryId: " + memoryId, e.getMessage());
+        } catch (Exception e) {
+            AssertJUnit.assertEquals("S3 Err - imageUrl or s3Key is null" , e.getMessage());
         }
     }
 
     @Test
     @DisplayName("추억일지 사진 삭제 성공")
-    public void deletePhotoSuccess() throws IOException {
+    public void deletePhotoSuccess() throws Exception {
         Double spotLatitude = 1.1;
         Double spotLongitude = 1.2;
         byte[] content = "test file content".getBytes();
         MockMultipartFile mockMultipartFile = new MockMultipartFile("file", "test.jpeg", "image/jpeg", content);
 
-        memorySpotController.uploadFile(mockMultipartFile, spotLatitude, spotLongitude, memoryID);
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        String imageUrl = "https://example.com/imageUrl_%2023-08-05T16%3A29%3A28.793374800";
+        String s3Key = "memoryphoto/test.jpeg";
+        request.setAttribute("imageUrl", imageUrl);
+        request.setAttribute("s3Key", s3Key);
+
+        memorySpotController.uploadFile(mockMultipartFile, spotLatitude, spotLongitude, memoryID, request);
+
         List<MemorySpot> memorySpots = memorySpotRepository.findBySpotLatitudeAndSpotLongitude(spotLatitude, spotLongitude);
         MemorySpot foundMemorySpot = null;
         for (MemorySpot memorySpot : memorySpots) {
@@ -171,18 +167,15 @@ class MemorySpotControllerTest {
         List<MemoryPhoto> memoryPhotos =  memoryPhotoRepository.findAllByMemorySpot(foundMemorySpot);
         MemoryPhoto memoryPhoto = memoryPhotoRepository.findByMemorySpotSpotId(foundMemorySpot.getSpotId());
         String photoUrl = memoryPhoto.getMemoryPhoto();
-        System.out.println("photourl : "+photoUrl);
 
         int tIndex = photoUrl.indexOf('T');
         String path = photoUrl.substring(0, tIndex + 1);
         String encodedTimePart = photoUrl.substring(tIndex + 1);
         String decodedTimePart = URLDecoder.decode(encodedTimePart, StandardCharsets.UTF_8);
         String decodedUrl = path + decodedTimePart;
-        System.out.println("decodeurl : "+decodedUrl);
 
         boolean result = memorySpotController.DeleteMemorySpotPhoto(decodedUrl);
 
         assertEquals(true, result);
     }
-
 }
