@@ -136,7 +136,7 @@ public class Photo4CutServiceTest {
         photo4CutService.collectionFriendTag(friendsList, photo4CutId);
 
         //When
-        List<Map<String, String>> friendInfo = photo4CutService.getTaggedFriendListByPhoto4CutId(photo4CutId);
+        List<Map<String, String>> friendInfo = photo4CutService.getFriendTagListByPhoto4CutId(photo4CutId);
 
         //Then
         assertEquals(nickName1, friendInfo.get(0).get("nickName"));

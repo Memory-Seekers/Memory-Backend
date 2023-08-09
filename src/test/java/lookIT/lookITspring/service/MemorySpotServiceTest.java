@@ -66,7 +66,7 @@ public class MemorySpotServiceTest {
         pathList.add(path2);
         MemoryCreateRequestDto requestDto = new MemoryCreateRequestDto(pathList);
 
-        memoryID = memoryService.memoryCreate(token1, requestDto);
+        memoryID = memoryService.createMemory(token1, requestDto);
     }
 
     @Test

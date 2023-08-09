@@ -76,7 +76,7 @@ class Photo4cutControllerTest {
         pathList.add(path2);
         MemoryCreateRequestDto requestDto = new MemoryCreateRequestDto(pathList);
 
-        memoryID = memoryService.memoryCreate(token, requestDto);
+        memoryID = memoryService.createMemory(token, requestDto);
 
         Landmark landmark = Landmark.builder()
                 .landmarkName("Test Landmark")
