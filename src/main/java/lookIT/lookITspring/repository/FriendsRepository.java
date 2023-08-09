@@ -7,8 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface FriendsRepository extends JpaRepository<Friends, FriendsId> {
 
-    List<Friends> findByFriendsId_User_UserId(Long userId);
+    List<Friends> findByFriendsId_Friend_UserIdAndStatus(Long userId, String status);
 
-    List<Friends> findByFriendsId_Friend_UserId(Long userId);
-
+    List<Friends> findByFriendsId_User_UserIdAndStatus(Long userId, String status);
 }

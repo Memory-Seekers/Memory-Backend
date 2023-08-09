@@ -17,14 +17,11 @@ import lookIT.lookITspring.repository.MemoryRepository;
 import lookIT.lookITspring.repository.MemorySpotRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-
-import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
-
 
 @RequiredArgsConstructor
 public class MemorySpotService {
@@ -140,11 +137,11 @@ public class MemorySpotService {
             boolean isS3Object = s3Client.doesObjectExist(bucket, key);
             if (isS3Object) {
                 s3Client.deleteObject(bucket, key);
-            } else {
+            } /*else {
                 throw new Exception("S3 object does not exist for the given key.");
-            }
+            }*/
         } catch (Exception e) {
-            throw new RuntimeException("Failed - Delete S3 file", e);
+            throw new IllegalArgumentException("S3 object does not exist for the given key.", e);
         }
     }
 
@@ -175,30 +172,4 @@ public class MemorySpotService {
         }
     }
 
-    @Transactional
-    public Boolean deleteSpot(Double spotLatitude, Double spotLongitude) {
-        List<MemorySpot> memorySpots = memorySpotRepository.findBySpotLatitudeAndSpotLongitude(
-            spotLatitude, spotLongitude);
-        if (!memorySpots.isEmpty()) {
-            for (MemorySpot memorySpot : memorySpots) {
-                Long spotId = memorySpot.getSpotId();
-                MemoryPhoto memoryPhoto = memoryPhotoRepository.findByMemorySpotSpotId(spotId);
-                System.out.println(spotId);
-                if (memoryPhoto != null) {
-                    try {
-                        deleteSpotPhoto(memoryPhoto.getMemoryPhoto());
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                        throw e;
-                    }
-                } else {
-                    System.out.println("No memory Photo.");
-                }
-                memorySpotRepository.deleteById(spotId);
-            }
-            return true;
-        } else {
-            throw new IllegalArgumentException("Memory spot not found.");
-        }
-    }
 }

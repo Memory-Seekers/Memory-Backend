@@ -2,6 +2,7 @@ package lookIT.lookITspring.service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lookIT.lookITspring.dto.FriendListDto;
@@ -20,73 +21,56 @@ public class FriendService {
     private final FriendsRepository friendsRepository;
     private final JwtProvider jwtProvider;
 
-    public List<FriendListDto> friendInfoIncludingTagId(String tagId, String token) {
+    public List<FriendListDto> getFriendInfoIncludingTagId(String tagId, String token) {
         Long userId = jwtProvider.getUserId(token);
-        User user = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid tagId"));
-        List<User> friends = userRepository.findAll();
+        User user = userRepository.findById(userId).get();
         List<FriendListDto> myFriendList = getMyfriendList(token);
-        List<FriendListDto> myRequestList = myRequestList(token);
-        List<FriendListDto> result = new ArrayList<>();
+        List<FriendListDto> myRequestList = getMyRequestList(token);
 
+        List<User> friends = userRepository.findAll();
+        List<FriendListDto> friendIncludingTagId = new ArrayList<>();
         for (User friend : friends) {
-            if (friend.getTagId().contains(tagId) && !friend.getTagId().equals(user.getTagId())) {
-                boolean isMyFriend = false;
-                boolean isMyRequest = false;
-
-                for (FriendListDto myFriend : myFriendList) {
-                    if (myFriend.getTagId().equals(friend.getTagId())) {
-                        isMyFriend = true;
-                        break;
-                    }
-                }
-
-                for (FriendListDto myRequest : myRequestList) {
-                    if (myRequest.getTagId().equals(friend.getTagId())) {
-                        isMyRequest = true;
-                        break;
-                    }
-                }
-
-                if (!isMyFriend && !isMyRequest) {
-                    FriendListDto friendListDto = new FriendListDto(
-                        friend.getTagId(),
-                        friend.getNickName());
-                    result.add(friendListDto);
-                }
+            if (friend.getTagId().contains(tagId)) {
+                FriendListDto friendListDto = new FriendListDto(
+                    friend.getTagId(),
+                    friend.getNickName());
+                friendIncludingTagId.add(friendListDto);
             }
         }
-        return result;
+
+        List<FriendListDto> filterFriendIncludingTagId = friendIncludingTagId.stream()
+            .filter(friend -> !friend.getTagId().equals(user.getTagId()))
+            .filter(friend -> myFriendList.stream().noneMatch(myFriend -> myFriend.getTagId().equals(friend.getTagId())))
+            .filter(friend -> myRequestList.stream().noneMatch(myFriend -> myFriend.getTagId().equals(friend.getTagId())))
+            .map(friend -> new FriendListDto(friend.getTagId(), friend.getNickName()))
+            .collect(Collectors.toList());
+
+        return filterFriendIncludingTagId;
     }
 
-    public FriendListDto myInfo(String token) {
+    public FriendListDto getMyInfo(String token) {
         Long userId = jwtProvider.getUserId(token);
-        User user = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid userId"));
-        FriendListDto friendListDto = new FriendListDto(
+        User user = userRepository.findById(userId).get();
+        FriendListDto myInformation = new FriendListDto(
             user.getTagId(),
             user.getNickName()
         );
-        return friendListDto;
+        return myInformation;
     }
 
-    public boolean friendRequest(String tagId, String token) {
+    public boolean sendFriendRequest(String tagId, String token) {
         Long userId = jwtProvider.getUserId(token);
-        User friend = userRepository.findByTagId(tagId)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid tagId"));
-        User user = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid userId"));
+        User friend = userRepository.findByTagId(tagId).get();
+        User user = userRepository.findById(userId).get();
         Friends friends = new Friends(friend, user, "R");
         friendsRepository.save(friends);
         return true;
     }
 
-    public boolean myRequestCancel(String tagId, String token) {
+    public boolean cancelMyRequest(String tagId, String token) {
         Long userId = jwtProvider.getUserId(token);
-        User friend = userRepository.findByTagId(tagId)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid tagId"));
-        User user = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid userId"));
+        User friend = userRepository.findByTagId(tagId).get();
+        User user = userRepository.findById(userId).get();
 
         FriendsId friendsId = new FriendsId(friend, user);
         Friends checkRequest = friendsRepository.findById(friendsId).orElse(null);
@@ -98,28 +82,23 @@ public class FriendService {
         }
     }
 
-    public List<FriendListDto> friendsRequestList(String token) {
+    public List<FriendListDto> recievedRequestList(String token) {
         Long userId = jwtProvider.getUserId(token);
-        List<Friends> myFriends = friendsRepository.findByFriendsId_Friend_UserId(userId);
-        List<FriendListDto> friendList = new ArrayList<>();
-
+        List<Friends> myFriends = friendsRepository.findByFriendsId_Friend_UserIdAndStatus(userId, "R");
+        List<FriendListDto> recievedRequestList = new ArrayList<>();
         for (Friends myFriend : myFriends) {
-            if (myFriend.getStatus().equals("R")) {
-                FriendListDto friendListDto = new FriendListDto(
-                    myFriend.getFriendsId().getUser().getTagId(),
-                    myFriend.getFriendsId().getUser().getNickName());
-                friendList.add(friendListDto);
-            }
+            FriendListDto friendListDto = new FriendListDto(
+                myFriend.getFriendsId().getFriend().getTagId(),
+                myFriend.getFriendsId().getFriend().getNickName());
+            recievedRequestList.add(friendListDto);
         }
-        return friendList;
+        return recievedRequestList;
     }
 
-    public boolean friendAccept(String tagId, String token) {
+    public boolean acceptFriendRequest(String tagId, String token) {
         Long userId = jwtProvider.getUserId(token);
-        User user = userRepository.findByTagId(tagId)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid tagId"));
-        User friend = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid userId"));
+        User user = userRepository.findByTagId(tagId).get();
+        User friend = userRepository.findById(userId).get();
 
         FriendsId friendsId = new FriendsId(friend, user);
         Friends checkRequest = friendsRepository.findById(friendsId).orElse(null);
@@ -133,12 +112,10 @@ public class FriendService {
         }
     }
 
-    public boolean friendReject(String tagId, String token) {
+    public boolean rejectFriendRequest(String tagId, String token) {
         Long userId = jwtProvider.getUserId(token);
-        User user = userRepository.findByTagId(tagId)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid tagId"));
-        User friend = userRepository.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("Invalid userId"));
+        User user = userRepository.findByTagId(tagId).get();
+        User friend = userRepository.findById(userId).get();
 
         FriendsId friendsId = new FriendsId(friend, user);
         Friends checkRequest = friendsRepository.findById(friendsId).orElse(null);
@@ -151,36 +128,26 @@ public class FriendService {
         }
     }
 
-    public List<FriendListDto> myRequestList(String token) {
+    private List<FriendListDto> getFriendListByStatus(String token, String status) {
         Long userId = jwtProvider.getUserId(token);
-        List<Friends> myFriends = friendsRepository.findByFriendsId_User_UserId(userId);
+        List<Friends> myFriends = friendsRepository.findByFriendsId_User_UserIdAndStatus(userId, status);
         List<FriendListDto> friendList = new ArrayList<>();
 
         for (Friends myFriend : myFriends) {
-            if (myFriend.getStatus().equals("R")) {
-                FriendListDto friendListDto = new FriendListDto(
-                    myFriend.getFriendsId().getFriend().getTagId(),
-                    myFriend.getFriendsId().getFriend().getNickName());
-                friendList.add(friendListDto);
-            }
+            FriendListDto friendListDto = new FriendListDto(
+                myFriend.getFriendsId().getFriend().getTagId(),
+                myFriend.getFriendsId().getFriend().getNickName());
+            friendList.add(friendListDto);
         }
         return friendList;
     }
 
-    public List<FriendListDto> getMyfriendList(String token) {
-        Long userId = jwtProvider.getUserId(token);
-        List<Friends> myFriends = friendsRepository.findByFriendsId_User_UserId(userId);
-        List<FriendListDto> friendList = new ArrayList<>();
+    public List<FriendListDto> getMyRequestList(String token) {
+        return getFriendListByStatus(token, "R");
+    }
 
-        for (Friends myFriend : myFriends) {
-            if (myFriend.getStatus().equals("A")) {
-                FriendListDto friendListDto = new FriendListDto(
-                    myFriend.getFriendsId().getFriend().getTagId(),
-                    myFriend.getFriendsId().getFriend().getNickName());
-                friendList.add(friendListDto);
-            }
-        }
-        return friendList;
+    public List<FriendListDto> getMyfriendList(String token) {
+        return getFriendListByStatus(token, "A");
     }
 
 }
