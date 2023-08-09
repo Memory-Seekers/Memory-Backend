@@ -13,10 +13,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
 import javax.transaction.Transactional;
-import org.springframework.mock.web.MockMultipartFile;
 
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockMultipartFile;
 import static org.junit.Assert.fail;
 import static org.testng.AssertJUnit.assertEquals;
 
@@ -84,7 +84,7 @@ public class Photo4CutServiceTest {
     public void Photo4CutDeleteTestFail_NonExistCollection() {
         try{
             Long photo4cutId = 5000L;
-            photo4CutService.Photo4CutDelete(photo4cutId);
+            photo4CutService.deletePhoto4Cut(photo4cutId);
             fail("Expected Exception to be thrown, but it was not thrown.");
         }catch(Exception e){
             assertEquals("No collection found for the given photo4CutId.", e.getMessage());
@@ -124,7 +124,13 @@ public class Photo4CutServiceTest {
         byte[] content = "test file content".getBytes();
         MockMultipartFile mockMultipartFile = new MockMultipartFile("file", "test.jpeg", "image/jpeg", content);
 
-        Long photo4CutId = photo4cutController.uploadFile(mockMultipartFile,landmark.getLandmarkId(), token);
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        String imageUrl = "https://example.com/imageUrl_%2023-08-05T16%3A29%3A28.793374800";
+        String s3Key = "memoryphoto/test.jpeg";
+        request.setAttribute("imageUrl", imageUrl);
+        request.setAttribute("s3Key", s3Key);
+
+        Long photo4CutId = photo4cutController.uploadFile(mockMultipartFile,landmark.getLandmarkId(), token, request);
 
         String[] friendsList = {"friendTagId"};
         photo4CutService.collectionFriendTag(friendsList, photo4CutId);
