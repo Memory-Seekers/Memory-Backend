@@ -1,10 +1,6 @@
 package lookIT.lookITspring.service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import lookIT.lookITspring.controller.Photo4cutController;
-import lookIT.lookITspring.dto.UserJoinRequestDto;
 import lookIT.lookITspring.entity.Landmark;
 import lookIT.lookITspring.repository.LandmarkRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -15,8 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import javax.transaction.Transactional;
 
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockMultipartFile;
 import static org.junit.Assert.fail;
 import static org.testng.AssertJUnit.assertEquals;
 
