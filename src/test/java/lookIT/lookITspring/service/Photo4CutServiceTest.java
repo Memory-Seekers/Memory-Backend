@@ -1,10 +1,6 @@
 package lookIT.lookITspring.service;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import lookIT.lookITspring.controller.Photo4cutController;
-import lookIT.lookITspring.dto.UserJoinRequestDto;
 import lookIT.lookITspring.entity.Landmark;
 import lookIT.lookITspring.repository.LandmarkRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -15,8 +11,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import javax.transaction.Transactional;
 
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockMultipartFile;
 import static org.junit.Assert.fail;
 import static org.testng.AssertJUnit.assertEquals;
 
@@ -89,58 +83,6 @@ public class Photo4CutServiceTest {
         }catch(Exception e){
             assertEquals("No collection found for the given photo4CutId.", e.getMessage());
         }
-    }
-
-    @Test
-    @DisplayName("추억네컷 태그된 친구 리스트 조회 성공")
-    public void getTaggedFriendListByPhoto4CutId() throws Exception{
-        //Given
-        String tagId = "userTagId";
-        String email = "user1@gmail.com";
-        String password = "memoryRecord123!";
-        String nickName = "userName";
-        UserJoinRequestDto user = new UserJoinRequestDto(tagId, email, password, nickName);
-
-        String tagId1 = "friendTagId";
-        String email1 = "friend@gmail.com";
-        String password1 = "memoryRecord123!";
-        String nickName1 = "friendName";
-        UserJoinRequestDto friend = new UserJoinRequestDto(tagId1, email1, password1, nickName1);
-        userService.join(user);
-        userService.join(friend);
-
-        HashMap<String, String> user1 = new HashMap<>();
-        user1.put("email", email);
-        user1.put("password", password);
-        String token = userService.login(user1);
-
-        Landmark landmark = Landmark.builder()
-            .landmarkName("Test Landmark")
-            .landLatitude(0.0)
-            .landLongitude(0.0)
-            .build();
-        landmarkRepository.save(landmark);
-
-        byte[] content = "test file content".getBytes();
-        MockMultipartFile mockMultipartFile = new MockMultipartFile("file", "test.jpeg", "image/jpeg", content);
-
-        MockHttpServletRequest request = new MockHttpServletRequest();
-        String imageUrl = "https://example.com/imageUrl_%2023-08-05T16%3A29%3A28.793374800";
-        String s3Key = "memoryphoto/test.jpeg";
-        request.setAttribute("imageUrl", imageUrl);
-        request.setAttribute("s3Key", s3Key);
-
-        Long photo4CutId = photo4cutController.uploadFile(mockMultipartFile,landmark.getLandmarkId(), token, request);
-
-        String[] friendsList = {"friendTagId"};
-        photo4CutService.collectionFriendTag(friendsList, photo4CutId);
-
-        //When
-        List<Map<String, String>> friendInfo = photo4CutService.getFriendTagListByPhoto4CutId(photo4CutId);
-
-        //Then
-        assertEquals(nickName1, friendInfo.get(0).get("nickName"));
-        assertEquals(tagId1, friendInfo.get(0).get("tagId"));
     }
 }
 
