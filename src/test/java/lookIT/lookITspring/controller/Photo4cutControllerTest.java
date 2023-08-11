@@ -1,6 +1,7 @@
 package lookIT.lookITspring.controller;
 
 import com.amazonaws.services.s3.AmazonS3;
+import java.util.Map;
 import lookIT.lookITspring.dto.LinePathDto;
 import lookIT.lookITspring.dto.MemoryCreateRequestDto;
 import lookIT.lookITspring.dto.UserJoinRequestDto;
@@ -30,6 +31,8 @@ import java.util.List;
 
 import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.testng.AssertJUnit.assertEquals;
+
 @SpringBootTest
 @Transactional
 @ExtendWith(SpringExtension.class)
@@ -190,5 +193,27 @@ class Photo4cutControllerTest {
         assertEquals(photo4cutID, collection.getPhoto4CutId());
         assertEquals(landmarkID,collection.getLandmark().getLandmarkId());
         assertEquals("user1@gmail.com",collection.getUser().getEmail());
+    }
+
+    @Test
+    @DisplayName("추억네컷 태그된 친구 리스트 조회 성공")
+    public void getTaggedFriendListByPhoto4CutId() throws Exception{
+        //Given
+        String tagId1 = "friendTagId";
+        String email1 = "friend@gmail.com";
+        String password1 = "memoryRecord123!";
+        String nickName1 = "friendName";
+        UserJoinRequestDto friend = new UserJoinRequestDto(tagId1, email1, password1, nickName1);
+        userService.join(friend);
+
+        String[] friendsList = {"friendTagId"};
+        photo4CutService.collectionFriendTag(friendsList, photo4cutID);
+
+        //When
+        List<Map<String, String>> friendInfo = photo4CutService.getTaggedFriendListByPhoto4CutId(photo4cutID);
+
+        //Then
+        assertEquals(nickName1, friendInfo.get(0).get("nickName"));
+        assertEquals(tagId1, friendInfo.get(0).get("tagId"));
     }
 }
