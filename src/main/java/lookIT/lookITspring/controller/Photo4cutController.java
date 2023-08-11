@@ -70,9 +70,9 @@ public class Photo4cutController {
 
     @GetMapping("/taggedFriendList")
     @ResponseBody
-    public List<Map<String, String>> getTaggedFriendListByPhoto4CutId(
+    public List<Map<String, String>> getFriendTagListByPhoto4CutId(
         @RequestParam Long photo4CutId) {
-        return photo4CutService.getTaggedFriendListByPhoto4CutId(photo4CutId);
+        return photo4CutService.getFriendTagListByPhoto4CutId(photo4CutId);
     }
 
     @DeleteMapping("/4CutPhotoDelete")
