@@ -32,10 +32,8 @@ public class JwtProvider {
     }
 
     // JWT 토큰 생성
-//	public String createToken(String userPk, List<String> roles) {
     public String createToken(Long userPk) {
         Claims claims = Jwts.claims().setSubject(Long.toString(userPk)); // JWT payload 에 저장되는 정보단위
-//		claims.put("roles", roles); // 정보는 key/value 쌍으로 저장됩니다.
         Date now = new Date();
         return Jwts.builder()
             .setClaims(claims) // 정보 저장
@@ -77,15 +75,11 @@ public class JwtProvider {
         }
     }
 
-    public void setExpiration(String jwtToken) {
-        Long userPk = getUserId(jwtToken);
-        Claims claims = Jwts.claims().setSubject(Long.toString(userPk)); // JWT payload 에 저장되는 정보단위
-        Date now = new Date();
-        Jwts.builder()
-            .setClaims(claims)
-            .setIssuedAt(now)
-            .setExpiration(new Date(now.getTime() + 1000))
-            .signWith(SignatureAlgorithm.HS256, secretKey)
-            .compact();
+    public Long getExpiration(String jwtToken) {
+        // accessToken 남은 유효시간
+        Date expiration = Jwts.parser().setSigningKey(secretKey).parseClaimsJws(jwtToken).getBody().getExpiration();
+        // 현재 시간
+        Long now = new Date().getTime();
+        return (expiration.getTime() - now);
     }
 }

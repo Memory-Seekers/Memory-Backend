@@ -9,5 +9,4 @@ public interface LandmarkRepository extends JpaRepository<Landmark, Long> {
 
     @Query("SELECT l.landmarkId, l.landLatitude, l.landLongitude FROM Landmark l")
     List<Object[]> findAllLandmarks();
-
 }

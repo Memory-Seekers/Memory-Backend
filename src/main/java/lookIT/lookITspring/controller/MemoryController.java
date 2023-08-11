@@ -2,12 +2,10 @@ package lookIT.lookITspring.controller;
 
 import java.util.List;
 import java.util.Map;
-import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lookIT.lookITspring.dto.MemoryCreateRequestDto;
 import lookIT.lookITspring.dto.MemoryListDto;
 import lookIT.lookITspring.service.MemoryService;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
@@ -18,10 +16,8 @@ public class MemoryController {
     private final MemoryService memoryService;
 
     @PostMapping("/create")
-    @ResponseStatus(HttpStatus.OK)
-    public Long memoryCreate(@Valid @RequestHeader String token,
-        @RequestBody MemoryCreateRequestDto request) throws Exception {
-        return memoryService.memoryCreate(token, request);
+    public Long createMemory(@RequestHeader String token, @RequestBody MemoryCreateRequestDto request) {
+        return memoryService.createMemory(token, request);
     }
 
     @PostMapping("/info")
@@ -31,7 +27,7 @@ public class MemoryController {
     }
 
     @GetMapping("/info")
-    public List<MemoryListDto> searchMemoryByInfoTags(@RequestHeader("token") String token,
+    public List<MemoryListDto> getMemoryByInfoTags(@RequestHeader("token") String token,
         @RequestParam String info) {
         return memoryService.searchMemoryByInfoTags(token, info);
     }
@@ -43,26 +39,26 @@ public class MemoryController {
 
     @GetMapping("/list")
     @ResponseBody
-    public List<MemoryListDto> getMemoryListById(@RequestHeader("token") String token) {
-        return memoryService.memoryListInquiry(token);
+    public List<MemoryListDto> getMemoryList(@RequestHeader("token") String token) {
+        return memoryService.getMemoryListByToken(token);
     }
 
     @GetMapping("/friendList")
     @ResponseBody
-    public List<MemoryListDto> getMemoryListByTagId(@RequestParam String tagId) {
-        return memoryService.friendMemoryListInquiry(tagId);
+    public List<MemoryListDto> getFriendMemoryList(@RequestParam String tagId) {
+        return memoryService.getFriendMemoryListByTagId(tagId);
     }
 
     @PostMapping("/friendTag")
     public String postMemoryFriendTag(@RequestBody String[] friendsList,
         @RequestParam Long memoryId) {
-        return memoryService.memoryFriendTag(friendsList, memoryId);
+        return memoryService.tagFriendToMemory(friendsList, memoryId);
     }
 
     @GetMapping("/taggedFriendList")
     @ResponseBody
-    public List<Map<String, String>> getTaggedFriendListByMemoryId(@RequestParam Long memoryId) {
-        return memoryService.getTaggedFriendListByMemoryId(memoryId);
+    public List<Map<String, String>> getFriendTagList(@RequestParam Long memoryId) {
+        return memoryService.getFriendTagListByMemoryId(memoryId);
     }
 
     @DeleteMapping("")

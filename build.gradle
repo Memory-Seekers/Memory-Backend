@@ -31,17 +31,21 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	implementation 'org.springframework.boot:spring-boot-starter-mail'
+	implementation 'org.springframework.boot:spring-boot-starter-mail:2.7.0'
 	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity5'
 	implementation 'io.jsonwebtoken:jjwt:0.9.1'
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	testImplementation 'org.projectlombok:lombok:1.18.22'
     testImplementation 'org.testng:testng:7.1.0'
 
 	testImplementation 'org.mockito:mockito-core:3.9.0'
 	testImplementation 'org.junit.jupiter:junit-jupiter:5.8.0'
+    testImplementation 'junit:junit:4.13.1'
+	testImplementation 'junit:junit:4.13.1'
+    testImplementation 'org.testng:testng:7.1.0'
 
 
-	compileOnly 'org.projectlombok:lombok'
+    compileOnly 'org.projectlombok:lombok'
 
 	implementation 'org.springframework:spring-web:5.3.9'
 
