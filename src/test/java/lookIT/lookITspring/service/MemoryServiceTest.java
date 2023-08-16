@@ -69,7 +69,7 @@ public class MemoryServiceTest {
 		HashMap<String, String> user1 = new HashMap<>();
 		user1.put("email", email);
 		user1.put("password", password);
-		token = userService.login(user1);
+		token = userService.login(user1).getAccessToken();
 
 		ArrayList<LinePathDto> pathList = new ArrayList<>();
 		LinePathDto path1 = new LinePathDto(101.13, 101.2);
@@ -182,7 +182,7 @@ public class MemoryServiceTest {
 		HashMap<String, String> user2 = new HashMap<>();
 		user2.put("email", email1);
 		user2.put("password", password1);
-		String token1 = userService.login(user2);
+		String token1 = userService.login(user2).getAccessToken();
 
 		//When
 		Integer expected_size = memoryService.getMemoryListByToken(token1).size();
@@ -253,7 +253,7 @@ public class MemoryServiceTest {
 		HashMap<String, String> user1 = new HashMap<>();
 		user1.put("email", email1);
 		user1.put("password", password1);
-		String token1 = userService.login(user1);
+		String token1 = userService.login(user1).getAccessToken();
 
 		ArrayList<LinePathDto> pathList = new ArrayList<>();
 		LinePathDto path1 = new LinePathDto(10.21564, 11.0216588);
@@ -284,7 +284,7 @@ public class MemoryServiceTest {
 		HashMap<String, String> user1 = new HashMap<>();
 		user1.put("email", email1);
 		user1.put("password", password1);
-		String token1 = userService.login(user1);
+		String token1 = userService.login(user1).getAccessToken();
 
 		ArrayList<LinePathDto> pathList = new ArrayList<>();
 		LinePathDto path1 = new LinePathDto(10.21564, 11.0216588);

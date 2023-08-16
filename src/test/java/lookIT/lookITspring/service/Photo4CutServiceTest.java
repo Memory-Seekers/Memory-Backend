@@ -112,7 +112,7 @@ public class Photo4CutServiceTest {
         HashMap<String, String> user1 = new HashMap<>();
         user1.put("email", email);
         user1.put("password", password);
-        String token = userService.login(user1);
+        String token = userService.login(user1).getAccessToken();
 
         Landmark landmark = Landmark.builder()
             .landmarkName("Test Landmark")

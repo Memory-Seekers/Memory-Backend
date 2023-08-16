@@ -65,7 +65,7 @@ class Photo4cutControllerTest {
         HashMap<String, String> user1 = new HashMap<>();
         user1.put("email", email);
         user1.put("password", password);
-        token = userService.login(user1);
+        token = userService.login(user1).getAccessToken();
 
         ArrayList<LinePathDto> pathList = new ArrayList<>();
         LinePathDto path1 = new LinePathDto(1.1, 1.2);

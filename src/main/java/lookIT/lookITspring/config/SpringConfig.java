@@ -10,6 +10,7 @@ import lookIT.lookITspring.repository.LinePathRepository;
 import lookIT.lookITspring.repository.MemoryPhotoRepository;
 import lookIT.lookITspring.repository.MemoryRepository;
 import lookIT.lookITspring.repository.PhotoTagsRepository;
+import lookIT.lookITspring.repository.RefreshTokenRepository;
 import lookIT.lookITspring.repository.UserRepository;
 import lookIT.lookITspring.repository.MemorySpotRepository;
 import lookIT.lookITspring.security.CustomUserDetailsService;
@@ -19,17 +20,14 @@ import lookIT.lookITspring.service.FriendService;
 import lookIT.lookITspring.service.LandmarkService;
 import lookIT.lookITspring.service.MemoryService;
 import lookIT.lookITspring.service.Photo4CutService;
+import lookIT.lookITspring.service.RefreshTokenService;
 import lookIT.lookITspring.service.UserService;
 import lookIT.lookITspring.service.MemorySpotService;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.connection.RedisConnectionFactory;
-import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
-import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -40,10 +38,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @EnableWebSecurity
 @EnableRedisRepositories
 public class SpringConfig {
-    @Value("${spring.redis.host}")
-    private String redis_host;
-    @Value("${spring.redis.port}")
-    private int redis_port;
 
     @Value("${mail.smtp.port}")
     private int port;
@@ -73,13 +67,14 @@ public class SpringConfig {
     private final MemoryPhotoRepository memoryPhotoRepository;
     private final PhotoTagsRepository photoTagsRepository;
     private final CollectionsRepository collectionsRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     public SpringConfig(UserRepository userRepository,
         MemorySpotRepository memorySpotRepository, LandmarkRepository landmarkRepository,
         MemoryRepository memoryRepository, LinePathRepository linePathRepository,
         FriendTagsRepository friendTagsRepository, InfoTagsRepository infoTagsRepository,
         FriendsRepository friendsRepository, MemoryPhotoRepository memoryPhotoRepository,
-        PhotoTagsRepository photoTagsRepository, CollectionsRepository collectionsRepository) {
+        PhotoTagsRepository photoTagsRepository, CollectionsRepository collectionsRepository, RefreshTokenRepository refreshTokenRepository) {
 
         this.userRepository = userRepository;
         this.memorySpotRepository = memorySpotRepository;
@@ -92,20 +87,7 @@ public class SpringConfig {
         this.memoryPhotoRepository = memoryPhotoRepository;
         this.photoTagsRepository = photoTagsRepository;
         this.collectionsRepository = collectionsRepository;
-    }
-
-    @Bean
-    public RedisConnectionFactory redisConnectionFactory() {
-        return new LettuceConnectionFactory(redis_host, redis_port);
-    }
-
-    @Bean
-    public RedisTemplate<String, Object> redisTemplate() {
-        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setConnectionFactory(redisConnectionFactory());
-        redisTemplate.setKeySerializer(new StringRedisSerializer());
-        redisTemplate.setValueSerializer(new StringRedisSerializer());
-        return redisTemplate;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     @Bean
@@ -148,7 +130,7 @@ public class SpringConfig {
 
     @Bean
     public UserService userService() {
-        return new UserService(userRepository, passwordEncoder(), jwtProvider(), redisTemplate(), emailService());
+        return new UserService(userRepository, passwordEncoder(), jwtProvider(), emailService(), refreshTokenService(), refreshTokenRepository);
     }
 
     @Bean
@@ -186,4 +168,10 @@ public class SpringConfig {
         return new Photo4CutService(landmarkRepository, collectionsRepository, userRepository,
             photoTagsRepository);
     }
+
+    @Bean
+    public RefreshTokenService refreshTokenService() {
+        return new RefreshTokenService(refreshTokenRepository, userRepository, jwtProvider());
+    }
+
 }

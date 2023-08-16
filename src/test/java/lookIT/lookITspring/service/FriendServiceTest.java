@@ -64,19 +64,19 @@ public class FriendServiceTest {
         userToken.put("email", email);
         userToken.put("password", password);
 
-        token = userService.login(userToken);
+        token = userService.login(userToken).getAccessToken();
 
         HashMap<String, String> friend1Token = new HashMap<>();
         friend1Token.put("email", friend1Email);
         friend1Token.put("password", friend1Password);
 
-        token2 = userService.login(friend1Token);
+        token2 = userService.login(friend1Token).getAccessToken();
 
         HashMap<String, String> friend2Token = new HashMap<>();
         friend2Token.put("email", friend2Email);
         friend2Token.put("password", friend2Password);
 
-        token3 = userService.login(friend2Token);
+        token3 = userService.login(friend2Token).getAccessToken();
     }
 
     @Test
