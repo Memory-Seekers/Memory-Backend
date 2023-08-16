@@ -1,7 +1,6 @@
 package lookIT.lookITspring.service;
 
 import static org.hibernate.validator.internal.util.Contracts.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.springframework.test.util.AssertionErrors.assertEquals;
 
 import java.util.HashMap;
@@ -85,7 +84,7 @@ public class FriendServiceTest {
         //Given
 
         //When
-        List<FriendListDto> foundFriends = friendService.friendInfoIncludingTagId("x1xy2yz3zk4k", token);
+        List<FriendListDto> foundFriends = friendService.getFriendInfoIncludingTagId("x1xy2yz3zk4k", token);
 
         //Then
         assertTrue(foundFriends.isEmpty(), "Assertion failed: Number of friends found including given Id is not zero");
@@ -97,7 +96,7 @@ public class FriendServiceTest {
         //Given
 
         //When
-        List<FriendListDto> foundFriends = friendService.friendInfoIncludingTagId("x1xy2yz3z", token);
+        List<FriendListDto> foundFriends = friendService.getFriendInfoIncludingTagId("x1xy2yz3z", token);
 
         //Then
         assertEquals("Assertion failed: Number of friends found including given Id is not one", 1, foundFriends.size());
@@ -109,7 +108,7 @@ public class FriendServiceTest {
         //Given
 
         //When
-        List<FriendListDto> foundFriends = friendService.friendInfoIncludingTagId("friend", token);
+        List<FriendListDto> foundFriends = friendService.getFriendInfoIncludingTagId("friend", token);
 
         //Then
         assert foundFriends.size() > 1 : "Assertion failed: Number of friends found including given Id is under two";
@@ -120,7 +119,7 @@ public class FriendServiceTest {
     public void 내_정보_조회() {
         //Given
         //When
-        FriendListDto myInfo = friendService.myInfo(token);
+        FriendListDto myInfo = friendService.getMyInfo(token);
 
         //Then
         assertEquals("Assertion failed: Landmark2 Id mismatch", "userTagId", myInfo.getTagId());
@@ -134,7 +133,7 @@ public class FriendServiceTest {
         friendsRepository.deleteAll();
 
         //When
-        boolean request = friendService.friendRequest("friend1x1xy2yz3z" ,token);
+        boolean request = friendService.sendFriendRequest("friend1x1xy2yz3z" ,token);
         List<Friends> friendsList = friendsRepository.findAll().stream()
             .filter(friends -> "R".equals(friends.getStatus()))
             .filter(friends -> "userTagId".equals(friends.getFriendsId().getUser().getTagId()))
@@ -154,14 +153,14 @@ public class FriendServiceTest {
     public void 내가_보낸_친구요청_취소() {
         //Given
         friendsRepository.deleteAll();
-        friendService.friendRequest("friend1x1xy2yz3z" ,token);
+        friendService.sendFriendRequest("friend1x1xy2yz3z" ,token);
         List<Friends> friendsList = friendsRepository.findAll().stream()
             .filter(friends -> "R".equals(friends.getStatus()))
             .filter(friends -> "userTagId".equals(friends.getFriendsId().getUser().getTagId()))
             .collect(Collectors.toList());
 
         //When
-        friendService.myRequestCancel("friend1x1xy2yz3z", token);
+        friendService.cancelMyRequest("friend1x1xy2yz3z", token);
         List<Friends> friendsList2 = friendsRepository.findAll().stream()
             .filter(friends -> "R".equals(friends.getStatus()))
             .filter(friends -> "userTagId".equals(friends.getFriendsId().getUser().getTagId()))
@@ -193,7 +192,7 @@ public class FriendServiceTest {
     public void 내가_받은_친구요청_리스트_1명() {
         //Given
         friendsRepository.deleteAll();
-        friendService.friendRequest("userTagId" ,token2);
+        friendService.sendFriendRequest("userTagId" ,token2);
 
         //When
         List<Friends> friendsList = friendsRepository.findAll().stream()
@@ -210,8 +209,8 @@ public class FriendServiceTest {
     public void 내가_받은_친구요청_리스트_여러명() {
         //Given
         friendsRepository.deleteAll();
-        friendService.friendRequest("userTagId" ,token2);
-        friendService.friendRequest("userTagId",token3);
+        friendService.sendFriendRequest("userTagId" ,token2);
+        friendService.sendFriendRequest("userTagId",token3);
 
         //When
         List<Friends> friendsList = friendsRepository.findAll().stream()
@@ -230,8 +229,8 @@ public class FriendServiceTest {
         friendsRepository.deleteAll();
 
         //When
-        friendService.friendRequest("userTagId" ,token2);
-        friendService.friendAccept("friend1x1xy2yz3z" ,token);
+        friendService.sendFriendRequest("userTagId" ,token2);
+        friendService.acceptFriendRequest("friend1x1xy2yz3z" ,token);
         List<Friends> friendsList = friendsRepository.findAll().stream()
             .filter(friends -> "A".equals(friends.getStatus()))
             .filter(user -> "userTagId".equals(user.getFriendsId().getFriend().getTagId()))
@@ -251,8 +250,8 @@ public class FriendServiceTest {
         friendsRepository.deleteAll();
 
         //When
-        friendService.friendRequest("friend1x1xy2yz3z" ,token);
-        friendService.friendReject("userTagId" ,token2);
+        friendService.sendFriendRequest("friend1x1xy2yz3z" ,token);
+        friendService.rejectFriendRequest("userTagId" ,token2);
         List<Friends> friendsList = friendsRepository.findAll().stream()
             .filter(user -> "userTagId".equals(user.getFriendsId().getUser().getTagId()))
             .collect(Collectors.toList());
@@ -268,7 +267,7 @@ public class FriendServiceTest {
         friendsRepository.deleteAll();
 
         //When
-        List<FriendListDto> friendsList = friendService.myRequestList(token);
+        List<FriendListDto> friendsList = friendService.getMyRequestList(token);
 
         //Then
         assertTrue(friendsList.isEmpty(), "Assertion failed: Number of friend request I've sent is not zero");
@@ -279,10 +278,10 @@ public class FriendServiceTest {
     public void 내가_보낸_친구요청_리스트_1명() {
         //Given
         friendsRepository.deleteAll();
-        friendService.friendRequest("friend1x1xy2yz3z" ,token);
+        friendService.sendFriendRequest("friend1x1xy2yz3z" ,token);
 
         //When
-        List<FriendListDto> friendsList = friendService.myRequestList(token);
+        List<FriendListDto> friendsList = friendService.getMyRequestList(token);
 
         //Then
         assertEquals("Assertion failed: Number of friend request is not one", 1, friendsList.size());
@@ -293,11 +292,11 @@ public class FriendServiceTest {
     public void 내가_보낸_친구요청_리스트_여러명() {
         //Given
         friendsRepository.deleteAll();
-        friendService.friendRequest("friend1x1xy2yz3z" ,token);
-        friendService.friendRequest("friend2TagId",token);
+        friendService.sendFriendRequest("friend1x1xy2yz3z" ,token);
+        friendService.sendFriendRequest("friend2TagId",token);
 
         //When
-        List<FriendListDto> friendsList = friendService.myRequestList(token);
+        List<FriendListDto> friendsList = friendService.getMyRequestList(token);
 
         //Then
         assertEquals("Assertion failed: Number of friend request is not two", 2, friendsList.size());
@@ -309,8 +308,8 @@ public class FriendServiceTest {
         //Given
         friendsRepository.deleteAll();
         Integer size = -1;
-        friendService.friendRequest("friend1x1xy2yz3z" ,token);
-        friendService.friendRequest("friend2TagId",token);
+        friendService.sendFriendRequest("friend1x1xy2yz3z" ,token);
+        friendService.sendFriendRequest("friend2TagId",token);
 
         //When
         List<FriendListDto> myFriendList = friendService.getMyfriendList(token);
@@ -325,11 +324,11 @@ public class FriendServiceTest {
         //Given
         friendsRepository.deleteAll();
         Integer size = -1;
-        friendService.friendRequest("friend1x1xy2yz3z" ,token);
-        friendService.friendRequest("friend2TagId",token);
+        friendService.sendFriendRequest("friend1x1xy2yz3z" ,token);
+        friendService.sendFriendRequest("friend2TagId",token);
 
         //When
-        friendService.friendAccept("userTagId" ,token2);
+        friendService.acceptFriendRequest("userTagId" ,token2);
         List<FriendListDto> friendsList = friendService.getMyfriendList(token);
 
         //Then
@@ -341,12 +340,12 @@ public class FriendServiceTest {
     public void 내_친구_리스트_여러명() {
         //Given
         friendsRepository.deleteAll();
-        friendService.friendRequest("friend1x1xy2yz3z" ,token);
-        friendService.friendRequest("friend2TagId",token);
+        friendService.sendFriendRequest("friend1x1xy2yz3z" ,token);
+        friendService.sendFriendRequest("friend2TagId",token);
 
         //When
-        friendService.friendAccept("userTagId" ,token2);
-        friendService.friendAccept("userTagId",token3);
+        friendService.acceptFriendRequest("userTagId" ,token2);
+        friendService.acceptFriendRequest("userTagId",token3);
 
         List<FriendListDto> friendsList = friendService.getMyfriendList(token);
 

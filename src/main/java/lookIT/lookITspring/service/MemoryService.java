@@ -1,6 +1,8 @@
 package lookIT.lookITspring.service;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,27 +56,23 @@ public class MemoryService {
     @Autowired
     private AmazonS3 s3Client;
 
-    public Long memoryCreate(String token, MemoryCreateRequestDto requestDto) throws Exception {
-        try {
+    public Long createMemory(String token, MemoryCreateRequestDto requestDto) {
             Long userId = jwtProvider.getUserId(token);
             User user = userRepository.findById(userId).get();
             Memory memory = Memory.builder()
                 .user(user)
                 .build();
-            Memory rememory = memoryRepository.save(memory);
+            Memory savedMemory = memoryRepository.save(memory);
 
             for (LinePathDto lp : requestDto.getPath()) {
                 LinePath linePath = LinePath.builder()
                     .latitude(lp.getLatitude())
                     .longitude(lp.getLongitude())
-                    .memory(rememory)
+                    .memory(savedMemory)
                     .build();
-                LinePath relinePath = linePathRepository.save(linePath);
+                linePathRepository.save(linePath);
             }
-            return rememory.getMemoryId();
-        } catch (Exception e) {
-            return new Long(-1);
-        }
+            return savedMemory.getMemoryId();
     }
 
     public List<MemoryListDto> getMemoryListByToken(String token) {
@@ -132,8 +130,11 @@ public class MemoryService {
         }
 
         LocalDateTime createAt = memory.getCreateAt();
+        ZoneId zoneId = ZoneId.of("Asia/Seoul");
+        ZonedDateTime zonedDateTime = createAt.atZone(zoneId);
+        ZonedDateTime zonedDateTimeWithOffset = zonedDateTime.plusHours(13);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy.MM.dd E", Locale.KOREA);
-        String createAtFormatted = createAt.format(formatter);
+        String createAtFormatted = zonedDateTimeWithOffset.format(formatter);
         List<InfoTagsDto> info = getInfoTagList(memoryId);
         List<FriendTagsDto> friends = getFriendTagList(memoryId);
 
@@ -192,10 +193,10 @@ public class MemoryService {
         return true;
     }
 
-    public List<Map<String, String>> getTaggedFriendListByMemoryId(Long memoryId) {
+    public List<Map<String, String>> getFriendTagListByMemoryId(Long memoryId) {
         Memory memory = memoryRepository.findById(memoryId).get();
         List<FriendTags> friendTags = friendTagsRepository.findByFriendTagsId_Memory(memory);
-        List<Map<String, String>> TaggedfriendList = new ArrayList<>();
+        List<Map<String, String>> friendTagList = new ArrayList<>();
 
         for (FriendTags friend : friendTags) {
             Long userId = friend.getFriendTagsId().getUser().getUserId();
@@ -203,9 +204,9 @@ public class MemoryService {
             Map<String, String> friendMap = new HashMap<>();
             friendMap.put("nickName", user.getNickName());
             friendMap.put("tagId", user.getTagId());
-            TaggedfriendList.add(friendMap);
+            friendTagList.add(friendMap);
         }
-        return TaggedfriendList;
+        return friendTagList;
     }
 
     public boolean deleteInfoTag(Map<String, String> infoId) {
@@ -278,22 +279,9 @@ public class MemoryService {
     public boolean deleteMemory(String token, Long memoryId) {
         Memory memory = memoryRepository.findById(memoryId).get();
         deleteLinePath(memory);
-        /**
-         * 다른 팀원들
-         * 추억일지 핀 삭제
-         * 추억일지 핀 사진 삭제
-         * 추억일지 친구 태그 삭제
-         */
-        // 추억일지 친구 태그 삭제
         deleteFriendTag(memoryId);
-
-        // 추억일지 정보 태그 삭제
         infoTagsRepository.deleteAllByInfoTagsIdMemory(memory);
-
-        // 추억일지 핀 및 사진 삭제
         deleteMemorySpot(memoryId);
-
-        // 추억일지 삭제
         memoryRepository.delete(memory);
         return true;
     }

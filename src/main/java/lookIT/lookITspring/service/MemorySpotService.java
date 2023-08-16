@@ -17,10 +17,6 @@ import lookIT.lookITspring.repository.MemoryRepository;
 import lookIT.lookITspring.repository.MemorySpotRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
-
-import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -150,7 +146,6 @@ public class MemorySpotService {
     }
 
     private void deleteSpotPhoto(String photoUrl) {
-        System.out.println(photoUrl);
         MemoryPhoto memoryPhoto = memoryPhotoRepository.findByMemoryPhoto(photoUrl);
 
         if (memoryPhoto != null) {
