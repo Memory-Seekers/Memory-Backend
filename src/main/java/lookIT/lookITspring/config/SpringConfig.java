@@ -187,4 +187,5 @@ public class SpringConfig implements WebMvcConfigurer {
     public AwsS3Interceptor awsS3Interceptor() {
         return new AwsS3Interceptor();
     }
+
 }
