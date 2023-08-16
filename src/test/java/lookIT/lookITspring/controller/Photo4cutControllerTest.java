@@ -1,6 +1,7 @@
 package lookIT.lookITspring.controller;
 
 import com.amazonaws.services.s3.AmazonS3;
+import java.util.Map;
 import lookIT.lookITspring.dto.LinePathDto;
 import lookIT.lookITspring.dto.MemoryCreateRequestDto;
 import lookIT.lookITspring.dto.UserJoinRequestDto;
@@ -18,8 +19,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.transaction.annotation.Transactional;
 import org.testng.AssertJUnit;
@@ -30,6 +31,8 @@ import java.util.List;
 
 import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.testng.AssertJUnit.assertEquals;
+
 @SpringBootTest
 @Transactional
 @ExtendWith(SpringExtension.class)
@@ -53,6 +56,8 @@ class Photo4cutControllerTest {
 
     private Long memoryID;
     private String token;
+    private Long photo4cutID;
+    private Long landmarkID;
     @BeforeEach
     void setUp() throws Exception{
         String tagId = "userTagId";
@@ -74,13 +79,8 @@ class Photo4cutControllerTest {
         pathList.add(path2);
         MemoryCreateRequestDto requestDto = new MemoryCreateRequestDto(pathList);
 
-        memoryID = memoryService.memoryCreate(token, requestDto);
+        memoryID = memoryService.createMemory(token, requestDto);
 
-    }
-
-    @Test
-    @DisplayName("추억네컷 등록 성공")
-    public void uploadFileTestSuccess() throws Exception{
         Landmark landmark = Landmark.builder()
                 .landmarkName("Test Landmark")
                 .landLatitude(0.0)
@@ -88,26 +88,43 @@ class Photo4cutControllerTest {
                 .build();
         landmarkRepository.save(landmark);
 
+        landmarkID = landmark.getLandmarkId();
+
         byte[] content = "test file content".getBytes();
         MockMultipartFile mockMultipartFile = new MockMultipartFile("file", "test.jpeg", "image/jpeg", content);
 
-        Long photo4cutID = photo4cutController.uploadFile(mockMultipartFile,landmark.getLandmarkId(), token);
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        String imageUrl = "https://example.com/imageUrl_%2023-08-05T16%3A29%3A28.793374800";
+        String s3Key = "memoryphoto/test.jpeg";
+        request.setAttribute("imageUrl", imageUrl);
+        request.setAttribute("s3Key", s3Key);
+
+        photo4cutID = photo4cutController.uploadFile(mockMultipartFile,landmark.getLandmarkId(), token, request);
+    }
+
+    @Test
+    @DisplayName("추억네컷 등록 성공")
+    public void uploadFileTestSuccess() throws Exception{
         assertNotNull(photo4cutID);
 
         Collections collection = collectionsRepository.getReferenceById(photo4cutID);
-        assertEquals(landmark.getLandmarkId(), collection.getLandmark().getLandmarkId());
+        assertEquals(landmarkID, collection.getLandmark().getLandmarkId());
     }
 
     @Test
     @DisplayName("추억네컷 등록 실패 - 존재하지 않는 랜드마크")
-    public void uploadFileTestFail() throws Exception{
+    public void uploadFileTestFail_InvalidLandmark() throws Exception{
         try{
-            Long landmarkID = 5000L;
-
             byte[] content = "test file content".getBytes();
             MockMultipartFile mockMultipartFile = new MockMultipartFile("file", "test.jpeg", "image/jpeg", content);
 
-            Long photo4cutID = photo4cutController.uploadFile(mockMultipartFile,landmarkID, token);
+            MockHttpServletRequest request = new MockHttpServletRequest();
+            String imageUrl = "https://example.com/imageUrl_%2023-08-05T16%3A29%3A28.793374800";
+            String s3Key = "memoryphoto/test.jpeg";
+            request.setAttribute("imageUrl", imageUrl);
+            request.setAttribute("s3Key", s3Key);
+
+            Long photo4cutID = photo4cutController.uploadFile(mockMultipartFile,5000L, token, request);
             fail("Expected IllegalArgumentException to be thrown, but it was not thrown.");
         }catch(IllegalArgumentException e){
             AssertJUnit.assertEquals("landmark not found" , e.getMessage());
@@ -116,18 +133,17 @@ class Photo4cutControllerTest {
     }
 
     @Test
-    @DisplayName("추억네컷 등록 실패 - 토큰 에러")
-    public void uploadFileTestFail_NonExistUser() throws Exception{
+    @DisplayName("추억네컷 등록 실패 - s3Err")
+    public void uploadFileTestFail_imgUrlorKeyNull() throws Exception{
         try{
-            Long landmarkID = 5000L;
-
             byte[] content = "test file content".getBytes();
             MockMultipartFile mockMultipartFile = new MockMultipartFile("file", "test.jpeg", "image/jpeg", content);
+            MockHttpServletRequest request = new MockHttpServletRequest();
 
-            Long photo4cutID = photo4cutController.uploadFile(mockMultipartFile,landmarkID, "nonExistToken");
+            Long photo4cutID = photo4cutController.uploadFile(mockMultipartFile,landmarkID, token, request);
             fail("Expected IllegalArgumentException to be thrown, but it was not thrown.");
         }catch(Exception e){
-            assertNotNull(e);
+            AssertJUnit.assertEquals("S3 Err - imageUrl or s3Key is null" , e.getMessage());
         }
 
     }
@@ -135,65 +151,37 @@ class Photo4cutControllerTest {
     @Test
     @DisplayName("추억네컷 삭제 성공")
     public void deleteTagTestSuccess() throws Exception{
-        Landmark landmark = Landmark.builder()
-                .landmarkName("Test Landmark")
-                .landLatitude(0.0)
-                .landLongitude(0.0)
-                .build();
-        landmarkRepository.save(landmark);
-
-        byte[] content = "test file content".getBytes();
-        MockMultipartFile mockMultipartFile = new MockMultipartFile("file", "test.jpeg", "image/jpeg", content);
-
-        Long photo4cutID = photo4cutController.uploadFile(mockMultipartFile,landmark.getLandmarkId(), token);
-        boolean result = photo4cutController.deleteTag(photo4cutID);
+        boolean result = photo4cutController.delete4CutPhoto(photo4cutID);
         assertTrue(result);
     }
 
     @Test
     @DisplayName("내가 생성한 추억네컷 리스트 조회")
-    public void MyMemory4CutTest() throws Exception{
-        Landmark landmark = Landmark.builder()
-                .landmarkName("Test Landmark")
-                .landLatitude(0.0)
-                .landLongitude(0.0)
-                .build();
-        landmarkRepository.save(landmark);
-
-        byte[] content1 = "test file content".getBytes();
+    public void getMyMemory4CutTest() throws Exception{
         byte[] content2 = "test file content".getBytes();
-        MockMultipartFile mockMultipartFile1 = new MockMultipartFile("file", "test.jpeg", "image/jpeg", content1);
         MockMultipartFile mockMultipartFile2 = new MockMultipartFile("file", "test.jpeg", "image/jpeg", content2);
 
-        Long photo4cutID1 = photo4cutController.uploadFile(mockMultipartFile1,landmark.getLandmarkId(), token);
-        Long photo4cutID2 = photo4cutController.uploadFile(mockMultipartFile2,landmark.getLandmarkId(), token);
+        MockHttpServletRequest request = new MockHttpServletRequest();
+        String imageUrl = "https://example.com/imageUrl2_%2023-08-05T16%3A29%3A28.793374800";
+        String s3Key = "memoryphoto/test2.jpeg";
+        request.setAttribute("imageUrl", imageUrl);
+        request.setAttribute("s3Key", s3Key);
+        photo4cutController.uploadFile(mockMultipartFile2,landmarkID, token, request);
 
-        List<Collections> collections = photo4cutController.MyMemory4Cut(token);
+        List<Collections> collections = photo4cutController.getMyMemory4Cut(token);
         assertEquals(2, collections.size());
     }
+
 
     @Test
     @DisplayName("태그된 추억네컷 리스트 조회")
     public void getCollectionsByTagIdTestSuccess() throws Exception{
-
         String tagId2 = "userTagId2";
         String email2 = "user2@gmail.com";
         String password2 = "memoryRecord123!";
         String nickName2 = "userName2";
         UserJoinRequestDto user2 = new UserJoinRequestDto(tagId2, email2, password2, nickName2);
         userService.join(user2);
-
-        Landmark landmark = Landmark.builder()
-                .landmarkName("Test Landmark")
-                .landLatitude(0.0)
-                .landLongitude(0.0)
-                .build();
-        landmarkRepository.save(landmark);
-
-        byte[] content = "test file content".getBytes();
-        MockMultipartFile mockMultipartFile = new MockMultipartFile("file", "test.jpeg", "image/jpeg", content);
-
-        Long photo4cutID = photo4cutController.uploadFile(mockMultipartFile,landmark.getLandmarkId(), token);
 
         String[] friendList = new String[]{tagId2};
         photo4CutService.collectionFriendTag(friendList,photo4cutID);
@@ -203,8 +191,29 @@ class Photo4cutControllerTest {
 
         Collections collection = collections.get(0);
         assertEquals(photo4cutID, collection.getPhoto4CutId());
-        assertEquals(landmark.getLandmarkId(),collection.getLandmark().getLandmarkId());
+        assertEquals(landmarkID,collection.getLandmark().getLandmarkId());
         assertEquals("user1@gmail.com",collection.getUser().getEmail());
     }
 
+    @Test
+    @DisplayName("추억네컷 태그된 친구 리스트 조회 성공")
+    public void getTaggedFriendListByPhoto4CutId() throws Exception{
+        //Given
+        String tagId1 = "friendTagId";
+        String email1 = "friend@gmail.com";
+        String password1 = "memoryRecord123!";
+        String nickName1 = "friendName";
+        UserJoinRequestDto friend = new UserJoinRequestDto(tagId1, email1, password1, nickName1);
+        userService.join(friend);
+
+        String[] friendsList = {"friendTagId"};
+        photo4CutService.collectionFriendTag(friendsList, photo4cutID);
+
+        //When
+        List<Map<String, String>> friendInfo = photo4CutService.getTaggedFriendListByPhoto4CutId(photo4cutID);
+
+        //Then
+        assertEquals(nickName1, friendInfo.get(0).get("nickName"));
+        assertEquals(tagId1, friendInfo.get(0).get("tagId"));
+    }
 }

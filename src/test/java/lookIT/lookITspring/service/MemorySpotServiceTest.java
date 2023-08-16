@@ -1,16 +1,13 @@
 package lookIT.lookITspring.service;
 
-import com.amazonaws.services.s3.AmazonS3;
 import lookIT.lookITspring.dto.LinePathDto;
 import lookIT.lookITspring.dto.MemoryCreateRequestDto;
 import lookIT.lookITspring.dto.UserJoinRequestDto;
 import lookIT.lookITspring.entity.LinePath;
 import lookIT.lookITspring.entity.Memory;
-import lookIT.lookITspring.entity.MemoryPhoto;
-import lookIT.lookITspring.entity.MemorySpot;
+
 import lookIT.lookITspring.repository.LinePathRepository;
 import lookIT.lookITspring.repository.MemoryPhotoRepository;
-import lookIT.lookITspring.repository.MemoryRepository;
 import lookIT.lookITspring.repository.MemorySpotRepository;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -20,14 +17,9 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
 import javax.transaction.Transactional;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 import static org.junit.Assert.*;
@@ -35,7 +27,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.testng.AssertJUnit.assertEquals;
 import static org.testng.AssertJUnit.assertNotNull;
 
-//@JdbcTest
 @SpringBootTest
 @Transactional
 @ExtendWith(SpringExtension.class)
@@ -75,7 +66,7 @@ public class MemorySpotServiceTest {
         pathList.add(path2);
         MemoryCreateRequestDto requestDto = new MemoryCreateRequestDto(pathList);
 
-        memoryID = memoryService.memoryCreate(token1, requestDto);
+        memoryID = memoryService.createMemory(token1, requestDto);
     }
 
     @Test

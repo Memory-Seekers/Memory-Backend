@@ -33,10 +33,12 @@ import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistration;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 @EnableWebSecurity
-@EnableRedisRepositories
 public class SpringConfig {
 
     @Value("${mail.smtp.port}")
@@ -172,6 +174,16 @@ public class SpringConfig {
     @Bean
     public RefreshTokenService refreshTokenService() {
         return new RefreshTokenService(refreshTokenRepository, userRepository, jwtProvider());
+    }
+
+    @Override
+    public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(awsS3Interceptor()).addPathPatterns("/memories/upload");
+    }
+
+    @Bean
+    public AwsS3Interceptor awsS3Interceptor() {
+        return new AwsS3Interceptor();
     }
 
 }

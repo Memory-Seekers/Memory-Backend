@@ -19,7 +19,6 @@ import java.nio.charset.StandardCharsets;
 @Profile("test")
 public class MockAwsS3Config extends S3config{
     @Bean
-    @Primary
     @Override
     public AmazonS3 amazonS3Client(){
         AmazonS3 s3ClientMock = Mockito.mock(AmazonS3.class);
