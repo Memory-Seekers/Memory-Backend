@@ -9,8 +9,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.HashMap;
 import javax.mail.internet.AddressException;
 import javax.transaction.Transactional;
+import lookIT.lookITspring.dto.JwtResponseDto;
 import lookIT.lookITspring.dto.UserJoinRequestDto;
+import lookIT.lookITspring.entity.RefreshToken;
 import lookIT.lookITspring.entity.User;
+import lookIT.lookITspring.repository.RefreshTokenRepository;
 import lookIT.lookITspring.repository.UserRepository;
 import lookIT.lookITspring.security.JwtProvider;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,10 +21,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.util.ObjectUtils;
 
 @SpringBootTest
 @Transactional
@@ -30,8 +31,8 @@ public class UserServiceTest {
 	@Autowired UserService userService;
 	@Autowired UserRepository userRepository;
 	@Autowired JwtProvider jwtProvider;
-	@Autowired RedisTemplate redisTemplate;
 	@Autowired PasswordEncoder passwordEncoder;
+	@Autowired RefreshTokenRepository refreshTokenRepository;
 
 	String tagId ="test";
 	String email ="test@gmail.com";
@@ -73,12 +74,16 @@ public class UserServiceTest {
 		user1.put("password", password);
 
 		//When
-		String token1 = userService.login(user1);
+		JwtResponseDto tokens = userService.login(user1);
 
 		//Then
-		Long userId1 = jwtProvider.getUserId(token1);
+		Long userId1 = jwtProvider.getUserId(tokens.getAccessToken());
 		User findUser = userRepository.findById(userId1).get();
 		assertEquals(email, findUser.getEmail());
+
+		String refreshToken = tokens.getRefreshToken();
+		RefreshToken findRefreshToken = refreshTokenRepository.findByToken(refreshToken).get();
+		assertEquals(email, findRefreshToken.getUser().getEmail());
 	}
 
 	@Test
@@ -122,14 +127,14 @@ public class UserServiceTest {
 		user1.put("email", email);
 		user1.put("password", password);
 
-		String token1 = userService.login(user1);
+		String token = userService.login(user1).getAccessToken();
 
 		//When
-		userService.logout(token1);
+		userService.logout(token);
 
 		//Then
-		String isLogout = (String)redisTemplate.opsForValue().get(token1);
-		assertFalse(ObjectUtils.isEmpty(isLogout));
+		User user = userRepository.findById(jwtProvider.getUserId(token)).get();
+		assertTrue(refreshTokenRepository.findByUser(user).isEmpty());
 	}
 
 	@Test

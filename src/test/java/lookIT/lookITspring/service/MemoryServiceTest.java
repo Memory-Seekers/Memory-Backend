@@ -69,7 +69,7 @@ public class MemoryServiceTest {
 		HashMap<String, String> user1 = new HashMap<>();
 		user1.put("email", email);
 		user1.put("password", password);
-		token = userService.login(user1);
+		token = userService.login(user1).getAccessToken();
 
 		ArrayList<LinePathDto> pathList = new ArrayList<>();
 		LinePathDto path1 = new LinePathDto(101.13, 101.2);
@@ -78,12 +78,12 @@ public class MemoryServiceTest {
 		pathList.add(path2);
 		MemoryCreateRequestDto requestDto = new MemoryCreateRequestDto(pathList);
 
-		memoryId = memoryService.memoryCreate(token, requestDto);
+		memoryId = memoryService.createMemory(token, requestDto);
 	}
 
 	@Test
 	@DisplayName("추억일지 생성_성공")
-	public void memoryCreateSuccess() throws Exception {
+	public void createMemorySuccess() throws Exception {
 		//Then
 		Memory memory = memoryRepository.findById(memoryId).get();
 		User user = userRepository.findByEmail("test@gmail.com").get();
@@ -140,7 +140,7 @@ public class MemoryServiceTest {
 		memoryService.tagFriendToMemory(friendsList, memoryId);
 
 		//When
-		List<Map<String,String>> findFriendList = memoryService.getTaggedFriendListByMemoryId(memoryId);
+		List<Map<String,String>> findFriendList = memoryService.getFriendTagListByMemoryId(memoryId);
 
 		//Then
 		assertEquals("testFriend1", findFriendList.get(0).get("tagId"));
@@ -182,7 +182,7 @@ public class MemoryServiceTest {
 		HashMap<String, String> user2 = new HashMap<>();
 		user2.put("email", email1);
 		user2.put("password", password1);
-		String token1 = userService.login(user2);
+		String token1 = userService.login(user2).getAccessToken();
 
 		//When
 		Integer expected_size = memoryService.getMemoryListByToken(token1).size();
@@ -212,7 +212,7 @@ public class MemoryServiceTest {
 		pathList.add(path1);
 		pathList.add(path2);
 		MemoryCreateRequestDto requestDto = new MemoryCreateRequestDto(pathList);
-		memoryService.memoryCreate(token, requestDto);
+		memoryService.createMemory(token, requestDto);
 
 		//When
 		Integer expected_size = memoryService.getMemoryListByToken(token).size();
@@ -253,7 +253,7 @@ public class MemoryServiceTest {
 		HashMap<String, String> user1 = new HashMap<>();
 		user1.put("email", email1);
 		user1.put("password", password1);
-		String token1 = userService.login(user1);
+		String token1 = userService.login(user1).getAccessToken();
 
 		ArrayList<LinePathDto> pathList = new ArrayList<>();
 		LinePathDto path1 = new LinePathDto(10.21564, 11.0216588);
@@ -261,7 +261,7 @@ public class MemoryServiceTest {
 		pathList.add(path1);
 		pathList.add(path2);
 		MemoryCreateRequestDto requestDto = new MemoryCreateRequestDto(pathList);
-		memoryService.memoryCreate(token1, requestDto);
+		memoryService.createMemory(token1, requestDto);
 
 		//When
 		Integer expected_size = memoryService.getFriendMemoryListByTagId(tagId1).size();
@@ -284,7 +284,7 @@ public class MemoryServiceTest {
 		HashMap<String, String> user1 = new HashMap<>();
 		user1.put("email", email1);
 		user1.put("password", password1);
-		String token1 = userService.login(user1);
+		String token1 = userService.login(user1).getAccessToken();
 
 		ArrayList<LinePathDto> pathList = new ArrayList<>();
 		LinePathDto path1 = new LinePathDto(10.21564, 11.0216588);
@@ -292,7 +292,7 @@ public class MemoryServiceTest {
 		pathList.add(path1);
 		pathList.add(path2);
 		MemoryCreateRequestDto requestDto = new MemoryCreateRequestDto(pathList);
-		memoryService.memoryCreate(token1, requestDto);
+		memoryService.createMemory(token1, requestDto);
 
 		ArrayList<LinePathDto> pathList2 = new ArrayList<>();
 		LinePathDto path3 = new LinePathDto(11.54654, 68.16549);
@@ -300,7 +300,7 @@ public class MemoryServiceTest {
 		pathList2.add(path3);
 		pathList2.add(path4);
 		MemoryCreateRequestDto requestDto2 = new MemoryCreateRequestDto(pathList2);
-		memoryService.memoryCreate(token1, requestDto2);
+		memoryService.createMemory(token1, requestDto2);
 
 		//When
 		Integer expected_size = memoryService.getFriendMemoryListByTagId(tagId1).size();

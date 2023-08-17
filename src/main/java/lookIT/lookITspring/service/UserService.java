@@ -2,14 +2,15 @@ package lookIT.lookITspring.service;
 
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 import javax.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lookIT.lookITspring.dto.JwtResponseDto;
 import lookIT.lookITspring.dto.UserJoinRequestDto;
+import lookIT.lookITspring.entity.RefreshToken;
 import lookIT.lookITspring.entity.User;
+import lookIT.lookITspring.repository.RefreshTokenRepository;
 import lookIT.lookITspring.repository.UserRepository;
 import lookIT.lookITspring.security.JwtProvider;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -20,8 +21,9 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
-    private final RedisTemplate redisTemplate;
     private final EmailService emailService;
+    private final RefreshTokenService refreshTokenService;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     public boolean join(UserJoinRequestDto requestDto) {
 
@@ -35,7 +37,7 @@ public class UserService {
         return true;
     }
 
-    public String login(Map<String, String> members) {
+    public JwtResponseDto login(Map<String, String> members) {
         User user = userRepository.findByEmail(members.get("email"))
             .orElseThrow(() -> new IllegalArgumentException("가입되지 않은 Email 입니다."));
 
@@ -43,7 +45,11 @@ public class UserService {
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new BadCredentialsException("비밀번호가 일치하지 않습니다.");
         }
-        return jwtProvider.createToken(user.getUserId());
+
+        String accessToken = jwtProvider.createAccessToken(user.getUserId());
+        RefreshToken refreshToken =  refreshTokenService.createRefreshToken(user.getUserId());
+
+        return new JwtResponseDto(accessToken, refreshToken.getToken());
     }
 
     public boolean checkIdDuplicate(String tagId) {
@@ -55,9 +61,8 @@ public class UserService {
     }
 
     public boolean logout(String token) {
-        Long expiration = jwtProvider.getExpiration(token);
-
-        redisTemplate.opsForValue().set(token, "logout", expiration, TimeUnit.MILLISECONDS);
+        Long userId = jwtProvider.getUserId(token);
+        refreshTokenRepository.deleteByUser(userRepository.findById(userId).get());
         return true;
     }
 
@@ -78,4 +83,5 @@ public class UserService {
         user.encodePassword(passwordEncoder);
         return true;
     }
+
 }

@@ -1,6 +1,7 @@
 package lookIT.lookITspring.controller;
 
 import com.amazonaws.services.s3.AmazonS3;
+import java.util.Map;
 import lookIT.lookITspring.dto.LinePathDto;
 import lookIT.lookITspring.dto.MemoryCreateRequestDto;
 import lookIT.lookITspring.dto.UserJoinRequestDto;
@@ -30,6 +31,8 @@ import java.util.List;
 
 import static org.junit.Assert.fail;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.testng.AssertJUnit.assertEquals;
+
 @SpringBootTest
 @Transactional
 @ExtendWith(SpringExtension.class)
@@ -67,7 +70,7 @@ class Photo4cutControllerTest {
         HashMap<String, String> user1 = new HashMap<>();
         user1.put("email", email);
         user1.put("password", password);
-        token = userService.login(user1);
+        token = userService.login(user1).getAccessToken();
 
         ArrayList<LinePathDto> pathList = new ArrayList<>();
         LinePathDto path1 = new LinePathDto(1.1, 1.2);
@@ -76,7 +79,7 @@ class Photo4cutControllerTest {
         pathList.add(path2);
         MemoryCreateRequestDto requestDto = new MemoryCreateRequestDto(pathList);
 
-        memoryID = memoryService.memoryCreate(token, requestDto);
+        memoryID = memoryService.createMemory(token, requestDto);
 
         Landmark landmark = Landmark.builder()
                 .landmarkName("Test Landmark")
@@ -190,5 +193,27 @@ class Photo4cutControllerTest {
         assertEquals(photo4cutID, collection.getPhoto4CutId());
         assertEquals(landmarkID,collection.getLandmark().getLandmarkId());
         assertEquals("user1@gmail.com",collection.getUser().getEmail());
+    }
+
+    @Test
+    @DisplayName("추억네컷 태그된 친구 리스트 조회 성공")
+    public void getTaggedFriendListByPhoto4CutId() throws Exception{
+        //Given
+        String tagId1 = "friendTagId";
+        String email1 = "friend@gmail.com";
+        String password1 = "memoryRecord123!";
+        String nickName1 = "friendName";
+        UserJoinRequestDto friend = new UserJoinRequestDto(tagId1, email1, password1, nickName1);
+        userService.join(friend);
+
+        String[] friendsList = {"friendTagId"};
+        photo4CutService.collectionFriendTag(friendsList, photo4cutID);
+
+        //When
+        List<Map<String, String>> friendInfo = photo4CutService.getFriendTagListByPhoto4CutId(photo4cutID);
+
+        //Then
+        assertEquals(nickName1, friendInfo.get(0).get("nickName"));
+        assertEquals(tagId1, friendInfo.get(0).get("tagId"));
     }
 }

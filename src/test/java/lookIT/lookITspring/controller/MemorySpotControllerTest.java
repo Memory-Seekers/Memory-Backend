@@ -67,7 +67,7 @@ class MemorySpotControllerTest {
         HashMap<String, String> user1 = new HashMap<>();
         user1.put("email", email);
         user1.put("password", password);
-        String token1 = userService.login(user1);
+        String token1 = userService.login(user1).getAccessToken();
 
         ArrayList<LinePathDto> pathList = new ArrayList<>();
         LinePathDto path1 = new LinePathDto(1.1, 1.2);
@@ -76,7 +76,7 @@ class MemorySpotControllerTest {
         pathList.add(path2);
         MemoryCreateRequestDto requestDto = new MemoryCreateRequestDto(pathList);
 
-        memoryID = memoryService.memoryCreate(token1, requestDto);
+        memoryID = memoryService.createMemory(token1, requestDto);
 
     }
 

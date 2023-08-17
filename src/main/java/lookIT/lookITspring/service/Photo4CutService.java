@@ -106,10 +106,9 @@ public class Photo4CutService {
         photoTagsRepository.deleteAll(photoTags);
     }
 
-    public List<Map<String, String>> getTaggedFriendListByPhoto4CutId(Long photo4CutId) {
-        Collections collections = collectionsRepository.findById(photo4CutId).get();
+    public List<Map<String, String>> getFriendTagListByPhoto4CutId(Long photo4CutId) {
         List<PhotoTags> photoTags = photoTagsRepository.findByCollectionsPhoto4CutId(photo4CutId);
-        List<Map<String, String>> friendList = new ArrayList<>();
+        List<Map<String, String>> friendTagList = new ArrayList<>();
 
         for (PhotoTags friend : photoTags) {
             String tagId = friend.getTagId();
@@ -117,9 +116,9 @@ public class Photo4CutService {
             Map<String, String> friendMap = new HashMap<>();
             friendMap.put("nickName", user.getNickName());
             friendMap.put("tagId", user.getTagId());
-            friendList.add(friendMap);
+            friendTagList.add(friendMap);
         }
-        return friendList;
+        return friendTagList;
     }
 
     private void deletePhotoFromS3(String key) throws Exception {
@@ -127,16 +126,13 @@ public class Photo4CutService {
             boolean isS3Object = s3Client.doesObjectExist(bucket, key);
             if (isS3Object) {
                 s3Client.deleteObject(bucket, key);
-            } /*else {
-                throw new Exception("S3 object does not exist for the given key.");
-            }*/
+            }
         } catch (Exception e) {
             throw new Exception("Failed - Delete S3 file", e);
         }
     }
 
     public boolean deletePhoto4Cut(Long photo4CutId) throws Exception{
-
             Optional<Collections> collectionOptional = collectionsRepository.findById(photo4CutId);
             Collections collection = collectionOptional.orElseThrow(
                 () -> new Exception("No collection found for the given photo4CutId."));

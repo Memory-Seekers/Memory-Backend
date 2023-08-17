@@ -2,12 +2,10 @@ package lookIT.lookITspring.controller;
 
 import java.util.List;
 import java.util.Map;
-import javax.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lookIT.lookITspring.dto.MemoryCreateRequestDto;
 import lookIT.lookITspring.dto.MemoryListDto;
 import lookIT.lookITspring.service.MemoryService;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RequiredArgsConstructor
@@ -18,10 +16,8 @@ public class MemoryController {
     private final MemoryService memoryService;
 
     @PostMapping("/create")
-    @ResponseStatus(HttpStatus.OK)
-    public Long memoryCreate(@Valid @RequestHeader String token,
-        @RequestBody MemoryCreateRequestDto request) throws Exception {
-        return memoryService.memoryCreate(token, request);
+    public Long createMemory(@RequestHeader String token, @RequestBody MemoryCreateRequestDto request) {
+        return memoryService.createMemory(token, request);
     }
 
     @PostMapping("/info")
@@ -61,8 +57,8 @@ public class MemoryController {
 
     @GetMapping("/taggedFriendList")
     @ResponseBody
-    public List<Map<String, String>> getTaggedFriendList(@RequestParam Long memoryId) {
-        return memoryService.getTaggedFriendListByMemoryId(memoryId);
+    public List<Map<String, String>> getFriendTagList(@RequestParam Long memoryId) {
+        return memoryService.getFriendTagListByMemoryId(memoryId);
     }
 
     @DeleteMapping("")
