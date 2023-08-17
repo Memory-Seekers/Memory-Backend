@@ -1,9 +1,7 @@
 package lookIT.lookITspring.security;
 
 import lombok.RequiredArgsConstructor;
-import lookIT.lookITspring.config.JwtSecurityConfig;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -15,11 +13,11 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final JwtProvider jwtProvider;
-    private final RedisTemplate redisTemplate;
+    private final AuthEntryPointJwt authEntryPointJwt;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        JwtAuthenticationFilter customFilter = new JwtAuthenticationFilter(jwtProvider, redisTemplate);
+        JwtAuthenticationFilter customFilter = new JwtAuthenticationFilter(jwtProvider);
         http.addFilterBefore(customFilter, UsernamePasswordAuthenticationFilter.class);
 
         http
@@ -27,45 +25,16 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .httpBasic().disable()
             .cors().disable()
             .csrf().disable()
+            .exceptionHandling().authenticationEntryPoint(authEntryPointJwt).and()
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             .and()
             .authorizeRequests()
-            .antMatchers("/member").hasRole("USER")
-            .antMatchers("/member/login").permitAll()
-            .antMatchers("/member/join").permitAll()
-            .antMatchers("/member/join/exists").permitAll()
-            .antMatchers("/member/logout").permitAll()
-            .antMatchers("/member/emailConfirm").permitAll()
-            .antMatchers("/member/emailConfirmJoin").permitAll()
-            .antMatchers("/member/findPassword").permitAll()
-            .antMatchers("/memories/upload").permitAll()
-            .antMatchers("/memories/photo").permitAll()
-            .antMatchers("/memories/spot").permitAll()
-            .antMatchers("/memories/linePath").permitAll()
-            .antMatchers("/memories/create").permitAll()
-            .antMatchers("/memories").permitAll()
-            .antMatchers("/memories/info").permitAll()
-            .antMatchers("/memories/info/delete").permitAll()
-            .antMatchers("/memories/list").permitAll()
-            .antMatchers("/memories/friendList").permitAll()
-            .antMatchers("/memories/friendTag").permitAll()
-            .antMatchers("/memories/taggedFriendList").permitAll()
-            .antMatchers("/main").permitAll()
-            .antMatchers("/main/landmarks").permitAll()
-            .antMatchers("/collections/4cutphoto").permitAll()
-            .antMatchers("/collections/tag").permitAll()
-            .antMatchers("/collections/4CutPhotoDelete").permitAll()
-            .antMatchers("/collections/*").permitAll()
-            .antMatchers("/collections").permitAll()
-            .antMatchers("/friends").permitAll()
-            .antMatchers("/friends/my").permitAll()
-            .antMatchers("/friends/request").permitAll()
-            .antMatchers("/friends/accept").permitAll()
-            .antMatchers("/friends/reject").permitAll()
-            .antMatchers("/friends/list").permitAll()
-            .anyRequest().authenticated()
-            .and()
-            .apply(new JwtSecurityConfig(jwtProvider, redisTemplate));
+            .antMatchers("/member/**").permitAll()
+            .antMatchers("/memories/**").permitAll()
+            .antMatchers("/main/**").permitAll()
+            .antMatchers("/collections/**").permitAll()
+            .antMatchers("/friends/**").permitAll()
+            .anyRequest().authenticated();
     }
 
     private static final String[] AUTH_WHITELIST = {
@@ -88,4 +57,5 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     public void configure(WebSecurity web) throws Exception {
         web.ignoring().antMatchers(AUTH_WHITELIST);
     }
+
 }
