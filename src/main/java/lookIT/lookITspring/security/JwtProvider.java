@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import java.time.Duration;
 import java.util.Base64;
 import java.util.Date;
 import javax.annotation.PostConstruct;
@@ -21,8 +22,6 @@ public class JwtProvider {
     @Value("${spring.security.jwt.secret}")
     private String secretKey;
 
-    private long accessTokenValidTime = 60 * 60 * 2 * 1000L;
-    private long refreshTokenValidTime = 60 * 60 * 24 * 14 * 1000L;
     private final UserDetailsService userDetailsService;
 
     // 객체 초기화, secretKey 를 Base64로 인코딩합니다.
@@ -38,7 +37,7 @@ public class JwtProvider {
         return Jwts.builder()
             .setClaims(claims) // 정보 저장
             .setIssuedAt(now) // 토큰 발행 시간 정보
-            .setExpiration(new Date(now.getTime() + accessTokenValidTime)) // set Expire Time
+            .setExpiration(new Date(now.getTime() + Duration.ofHours(2).toMillis())) // set Expire Time
             .signWith(SignatureAlgorithm.HS256, secretKey)  // 사용할 암호화 알고리즘
             // signature 에 들어갈 secret 값 세팅
             .compact();
@@ -48,7 +47,7 @@ public class JwtProvider {
         Date now = new Date();
         return Jwts.builder()
             .setIssuedAt(now)
-            .setExpiration(new Date(now.getTime() + refreshTokenValidTime))
+            .setExpiration(new Date(now.getTime() + Duration.ofDays(14).toMillis()))
             .signWith(SignatureAlgorithm.HS256, secretKey)
             .compact();
     }
