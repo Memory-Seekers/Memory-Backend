@@ -42,8 +42,8 @@ public class UserController {
     }
 
     @DeleteMapping("/logout")
-    public boolean logout(@RequestHeader Map<String, String> request) {
-        return userService.logout(request.get("X-AUTH-TOKEN"));
+    public boolean logout(@RequestHeader(value="X-AUTH-TOKEN") String token) {
+        return userService.logout(token);
     }
 
     @PostMapping("/emailConfirm")
