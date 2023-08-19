@@ -4,6 +4,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import java.time.Duration;
 import java.util.Base64;
 import java.util.Date;
 import javax.annotation.PostConstruct;
@@ -21,8 +22,6 @@ public class JwtProvider {
     @Value("${spring.security.jwt.secret}")
     private String secretKey;
 
-    // 토큰 유효시간 168 시간(7일)
-    private long tokenValidTime = 1440 * 60 * 7 * 1000L;
     private final UserDetailsService userDetailsService;
 
     // 객체 초기화, secretKey 를 Base64로 인코딩합니다.
@@ -32,21 +31,30 @@ public class JwtProvider {
     }
 
     // JWT 토큰 생성
-    public String createToken(Long userPk) {
+    public String createAccessToken(Long userPk) {
         Claims claims = Jwts.claims().setSubject(Long.toString(userPk)); // JWT payload 에 저장되는 정보단위
         Date now = new Date();
         return Jwts.builder()
             .setClaims(claims) // 정보 저장
             .setIssuedAt(now) // 토큰 발행 시간 정보
-            .setExpiration(new Date(now.getTime() + tokenValidTime)) // set Expire Time
+            .setExpiration(new Date(now.getTime() + Duration.ofHours(2).toMillis())) // set Expire Time
             .signWith(SignatureAlgorithm.HS256, secretKey)  // 사용할 암호화 알고리즘
             // signature 에 들어갈 secret 값 세팅
             .compact();
     }
 
+    public String createRefreshToken() {
+        Date now = new Date();
+        return Jwts.builder()
+            .setIssuedAt(now)
+            .setExpiration(new Date(now.getTime() + Duration.ofDays(14).toMillis()))
+            .signWith(SignatureAlgorithm.HS256, secretKey)
+            .compact();
+    }
+
     // JWT 토큰에서 인증 정보 조회
     public Authentication getAuthentication(String token) {
-        UserDetails userDetails = userDetailsService.loadUserByUsername(this.getUserPk(token));
+        UserDetails userDetails = userDetailsService.loadUserByUsername(Long.toString(this.getUserId(token)));
         return new UsernamePasswordAuthenticationToken(userDetails, "",
             userDetails.getAuthorities());
     }
@@ -82,4 +90,15 @@ public class JwtProvider {
         Long now = new Date().getTime();
         return (expiration.getTime() - now);
     }
+
+
+    public String createExpiredRefreshToken() {
+        Date now = new Date();
+        return Jwts.builder()
+            .setIssuedAt(now)
+            .setExpiration(new Date(now.getTime()))
+            .signWith(SignatureAlgorithm.HS256, secretKey)
+            .compact();
+    }
+
 }

@@ -40,4 +40,5 @@ public class UserJoinRequestDto {
             .nickName(nickName)
             .build();
     }
+
 }

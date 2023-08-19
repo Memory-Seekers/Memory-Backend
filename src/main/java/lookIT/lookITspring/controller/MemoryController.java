@@ -16,7 +16,7 @@ public class MemoryController {
     private final MemoryService memoryService;
 
     @PostMapping("/create")
-    public Long createMemory(@RequestHeader String token, @RequestBody MemoryCreateRequestDto request) {
+    public Long createMemory(@RequestHeader(value="X-AUTH-TOKEN") String token, @RequestBody MemoryCreateRequestDto request) {
         return memoryService.createMemory(token, request);
     }
 
@@ -62,7 +62,7 @@ public class MemoryController {
     }
 
     @DeleteMapping("")
-    public boolean deleteMemory(@RequestHeader String token, @RequestParam Long memoryId) {
+    public boolean deleteMemory(@RequestHeader(value="X-AUTH-TOKEN") String token, @RequestParam Long memoryId) {
         return memoryService.deleteMemory(token, memoryId);
     }
 
