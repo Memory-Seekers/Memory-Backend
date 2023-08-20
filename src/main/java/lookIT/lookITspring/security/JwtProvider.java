@@ -24,7 +24,6 @@ public class JwtProvider {
     private String secretKey;
 
     private final UserDetailsService userDetailsService;
-    private final UserRepository userRepository;
 
     // 객체 초기화, secretKey 를 Base64로 인코딩합니다.
     @PostConstruct
