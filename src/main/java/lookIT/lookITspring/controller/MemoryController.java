@@ -27,7 +27,7 @@ public class MemoryController {
     }
 
     @GetMapping("/info")
-    public List<MemoryListDto> getMemoryByInfoTags(@RequestHeader("token") String token,
+    public List<MemoryListDto> getMemoryByInfoTags(@RequestHeader(value="X-AUTH-TOKEN") String token,
         @RequestParam String info) {
         return memoryService.searchMemoryByInfoTags(token, info);
     }
@@ -39,7 +39,7 @@ public class MemoryController {
 
     @GetMapping("/list")
     @ResponseBody
-    public List<MemoryListDto> getMemoryList(@RequestHeader("token") String token) {
+    public List<MemoryListDto> getMemoryList(@RequestHeader(value="X-AUTH-TOKEN") String token) {
         return memoryService.getMemoryListByToken(token);
     }
 

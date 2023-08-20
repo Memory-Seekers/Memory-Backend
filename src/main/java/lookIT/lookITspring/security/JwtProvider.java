@@ -10,6 +10,7 @@ import java.util.Date;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lookIT.lookITspring.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -43,9 +44,11 @@ public class JwtProvider {
             .compact();
     }
 
-    public String createRefreshToken() {
+    public String createRefreshToken(Long userPk) {
+        Claims claims = Jwts.claims().setSubject(Long.toString(userPk));
         Date now = new Date();
         return Jwts.builder()
+            .setClaims(claims)
             .setIssuedAt(now)
             .setExpiration(new Date(now.getTime() + Duration.ofDays(14).toMillis()))
             .signWith(SignatureAlgorithm.HS256, secretKey)

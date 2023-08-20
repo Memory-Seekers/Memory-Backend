@@ -36,11 +36,15 @@ public class AwsS3Interceptor extends HandlerInterceptorAdapter {
                 if (file != null) {
                     try{
                         String folderName = method.getAnnotation(S3FileUpload.class).value();
+                        System.out.println(folderName);
                         String imageUrl = uploadFileAndGetImageUrl(file, folderName);
                         String key = folderName + "/" + file.getOriginalFilename();
 
                         request.setAttribute("imageUrl", imageUrl);
                         request.setAttribute("s3Key", key);
+
+                        System.out.println("imageUrl: " + imageUrl);
+                        System.out.println("s3Key: " + key);
 
                         return true;
                     }catch(NullPointerException e){

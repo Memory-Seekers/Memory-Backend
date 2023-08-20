@@ -37,7 +37,7 @@ public class Photo4cutController {
     public Long uploadFile(
         @RequestParam("file") MultipartFile file,
         @RequestParam("landmarkId") Long landmarkId,
-        @RequestHeader("token") String token,
+        @RequestHeader(value="X-AUTH-TOKEN") String token,
         HttpServletRequest request
     ) throws Exception {
         Long userId = jwtProvider.getUserId(token);
@@ -52,7 +52,7 @@ public class Photo4cutController {
     }
 
     @GetMapping("")
-    public List<Collections> getMyMemory4Cut(@RequestHeader("token") String token) throws Exception {
+    public List<Collections> getMyMemory4Cut(@RequestHeader(value="X-AUTH-TOKEN") String token) throws Exception {
         Long userId = jwtProvider.getUserId(token);
         return photo4CutService.getCollectionsByUserId(userId);
     }
