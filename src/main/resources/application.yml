@@ -53,7 +53,7 @@ cloud:
       accessKey: ${AWS_ACCESS_KEY}
       secretKey: ${AWS_SECRET_KEY}
     s3:
-      bucket: capstone-lookit
+      bucket: memory-seekers
     region:
       static: ap-northeast-2
     stack:

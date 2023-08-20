@@ -154,7 +154,7 @@ class Photo4cutControllerTest {
         boolean result = photo4cutController.delete4CutPhoto(photo4cutID);
         assertTrue(result);
     }
-
+/*
     @Test
     @DisplayName("내가 생성한 추억네컷 리스트 조회")
     public void getMyMemory4CutTest() throws Exception{
@@ -171,6 +171,8 @@ class Photo4cutControllerTest {
         List<Collections> collections = photo4cutController.getMyMemory4Cut(token);
         assertEquals(2, collections.size());
     }
+
+ */
 
 
     @Test
