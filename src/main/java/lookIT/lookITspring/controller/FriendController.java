@@ -23,52 +23,52 @@ public class FriendController {
 
     @GetMapping
     public List<FriendListDto> getUserByTagId(@RequestParam String tagId,
-        @RequestHeader("token") String token) {
+        @RequestHeader(value="X-AUTH-TOKEN") String token) {
         return friendService.getFriendInfoIncludingTagId(tagId, token);
     }
 
     @GetMapping("/my")
-    public FriendListDto getMyInfo(@RequestHeader("token") String token) {
+    public FriendListDto getMyInfo(@RequestHeader(value="X-AUTH-TOKEN") String token) {
         return friendService.getMyInfo(token);
     }
 
     @PostMapping("/request")
     @ResponseStatus(HttpStatus.OK)
-    public boolean sendFriendRequest(@RequestParam String tagId, @RequestHeader("token") String token) throws Exception {
+    public boolean sendFriendRequest(@RequestParam String tagId, @RequestHeader(value="X-AUTH-TOKEN") String token) throws Exception {
         return friendService.sendFriendRequest(tagId, token);
     }
 
     @PostMapping("/accept")
     @ResponseStatus(HttpStatus.OK)
-    public boolean acceptFriendRequest(@RequestParam String tagId, @RequestHeader("token") String token)
+    public boolean acceptFriendRequest(@RequestParam String tagId, @RequestHeader(value="X-AUTH-TOKEN") String token)
         throws Exception {
         return friendService.acceptFriendRequest(tagId, token);
     }
 
     @DeleteMapping("/reject")
-    public boolean rejectFriendRequest(@RequestParam String tagId, @RequestHeader("token") String token)
+    public boolean rejectFriendRequest(@RequestParam String tagId, @RequestHeader(value="X-AUTH-TOKEN") String token)
         throws Exception {
         return friendService.rejectFriendRequest(tagId, token);
     }
 
     @GetMapping("/request")
-    public List<FriendListDto> getMyRequest(@RequestHeader("token") String token) {
+    public List<FriendListDto> getMyRequest(@RequestHeader(value="X-AUTH-TOKEN") String token) {
         return friendService.getMyRequestList(token);
     }
 
     @DeleteMapping("/request")
     public boolean cancelFriendRequest(@RequestParam String tagId,
-        @RequestHeader("token") String token) {
+        @RequestHeader(value="X-AUTH-TOKEN") String token) {
         return friendService.cancelMyRequest(tagId, token);
     }
 
     @GetMapping("/accept")
-    public List<FriendListDto> getFriendRequest(@RequestHeader("token") String token) {
+    public List<FriendListDto> getFriendRequest(@RequestHeader(value="X-AUTH-TOKEN") String token) {
         return friendService.recievedRequestList(token);
     }
 
     @GetMapping("/list")
-    public List<FriendListDto> getMyFriendList(@RequestHeader("token") String token) {
+    public List<FriendListDto> getMyFriendList(@RequestHeader(value="X-AUTH-TOKEN") String token) {
         return friendService.getMyfriendList(token);
     }
 

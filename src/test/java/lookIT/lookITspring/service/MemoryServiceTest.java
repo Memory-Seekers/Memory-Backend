@@ -250,10 +250,10 @@ public class MemoryServiceTest {
 		UserJoinRequestDto userDto1 = new UserJoinRequestDto(tagId1, email1, password1, nickName1);
 		userService.join(userDto1);
 
-		HashMap<String, String> user1 = new HashMap<>();
-		user1.put("email", email1);
-		user1.put("password", password1);
-		String token1 = userService.login(user1).getAccessToken();
+		HashMap<String, String> user3 = new HashMap<>();
+		user3.put("email", email1);
+		user3.put("password", password1);
+		String token1 = userService.login(user3).getAccessToken();
 
 		ArrayList<LinePathDto> pathList = new ArrayList<>();
 		LinePathDto path1 = new LinePathDto(10.21564, 11.0216588);
