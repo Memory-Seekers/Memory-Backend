@@ -181,6 +181,7 @@ public class SpringConfig implements WebMvcConfigurer {
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(awsS3Interceptor()).addPathPatterns("/memories/upload");
+        registry.addInterceptor(awsS3Interceptor()).addPathPatterns("/collections/4cutphoto");
     }
 
     @Bean
