@@ -100,7 +100,7 @@ public class SpringConfig implements WebMvcConfigurer {
 
     @Bean
     public JwtProvider jwtProvider() {
-        return new JwtProvider(customUserDetailsService());
+        return new JwtProvider(customUserDetailsService(), userRepository);
     }
 
     @Bean

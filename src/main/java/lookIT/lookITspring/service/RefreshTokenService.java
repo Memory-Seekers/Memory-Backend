@@ -19,7 +19,7 @@ public class RefreshTokenService {
 
 		RefreshToken refreshToken = RefreshToken.builder()
 			.user(userRepository.findById(userId).get())
-			.token(jwtProvider.createRefreshToken()).build();
+			.token(jwtProvider.createRefreshToken(userId)).build();
 
 		RefreshToken savedRefreshToken = refreshTokenRepository.save(refreshToken);
 		return savedRefreshToken;
